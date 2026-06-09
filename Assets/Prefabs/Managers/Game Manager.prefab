@@ -1,0 +1,192 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8993526741983432931
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 480581107252287436}
+  - component: {fileID: 10946590621211186}
+  - component: {fileID: 7017264594273454127}
+  - component: {fileID: 1952167961294130224}
+  m_Layer: 0
+  m_Name: Game Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &480581107252287436
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993526741983432931}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 66.53519, y: 132.16702, z: 25.5704}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &10946590621211186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993526741983432931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36ab5cc7336b03a4cb6a2736693a6069, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MineralManager
+  _upgradeText: {fileID: 0}
+  _questionMarkIcon: {fileID: 0}
+  _pickupIcon: {fileID: 0}
+  OverlayUI: {fileID: 0}
+  UpgradeUI: {fileID: 0}
+  GameOverScreen: {fileID: 0}
+  InMenu: 0
+  _entranceDoorText: {fileID: 0}
+  _normalRockHoverText: {fileID: 0}
+  _mineralDepositHoverText: {fileID: 0}
+  _blockageRockHoverText: {fileID: 0}
+  HasWon: 0
+  HasDied: 0
+  IsPaused: 0
+  _controlsOverlay: {fileID: 0}
+  _inventoryUI: {fileID: 0}
+  _viewGemScreenUI: {fileID: 0}
+  _mineralStatsCanvasGroup: {fileID: 0}
+  _deathPostProcessVolume: {fileID: 0}
+  _blackScreen: {fileID: 0}
+--- !u!114 &7017264594273454127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993526741983432931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7e8924be383a0e44881df2e929b5c36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Inventory
+  pickaxeUIParent: {fileID: 0}
+  bronzePickaxeUI: {fileID: 7927325591584581760, guid: 617f25b9fb1b97d4c8b8400d28448ce4, type: 3}
+  ironPickaxeUI: {fileID: 7927325591584581760, guid: 7d737bbff4754e34685634164fb41d64, type: 3}
+  goldPickaxeUI: {fileID: 7927325591584581760, guid: 917c5fcb56d8b544f9f0fe0ca7d41cba, type: 3}
+  lightGemItem: {fileID: 11400000, guid: 945055e25c8a77940a1e13c30403cd90, type: 2}
+  playerLight: {fileID: 0}
+  gemAttachSound: {fileID: 8300000, guid: 2e7540905157a734db46f8ceebbca3c2, type: 3}
+  gemDetachSound: {fileID: 8300000, guid: be42ba26a0cf2f348990d9252342782f, type: 3}
+  _debugStartingItems:
+  - Item: {fileID: 11400000, guid: 1d95cd079a3b48840b815174dfc5a9e5, type: 2}
+    Quantity: 100
+  - Item: {fileID: 11400000, guid: 6c818ca8e9758284bb0e0959fabd7187, type: 2}
+    Quantity: 100
+  - Item: {fileID: 11400000, guid: 899220e9c03787e4f85640cbd18a5a94, type: 2}
+    Quantity: 100
+--- !u!82 &1952167961294130224
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993526741983432931}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 0.579
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
