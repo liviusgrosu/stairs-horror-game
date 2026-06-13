@@ -33,7 +33,7 @@ public class BodyEncounter : MonoBehaviour
         if (!particleEffect || !_player) return;
 
         var sqrDist = (_player.position - transform.position).sqrMagnitude;
-        var shouldBeActive = sqrDist <= particleRadius * particleRadius;
+        var shouldBeActive = !_hasTriggered && sqrDist <= particleRadius * particleRadius;
         if (shouldBeActive == _particleActive) return;
 
         _particleActive = shouldBeActive;
