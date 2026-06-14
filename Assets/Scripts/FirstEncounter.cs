@@ -20,6 +20,8 @@ public class FirstEncounter : MonoBehaviour
     [SerializeField] private float recurringSpawnInterval = 120f;
     [Tooltip("When the player comes within this range of a dormant recurring zombie, the rest of the wave despawns. Set larger than the enemy's engage distance so the player can move around a found zombie without waking it.")]
     [SerializeField] private float recurringCommitDistance = 20f;
+    [Tooltip("If the player leaves a still-dormant recurring zombie farther than this, it despawns (freeing the next wave to spawn). Set larger than the commit distance.")]
+    [SerializeField] private float recurringAbandonDistance = 60f;
 
     private readonly Vector3[] _offsets = new Vector3[8];
     private readonly List<BodyEncounter> _spawned = new List<BodyEncounter>();
@@ -71,6 +73,7 @@ public class FirstEncounter : MonoBehaviour
         if (_recurringWave.Count > 0)
         {
             TryCommitRecurringWave(playerPos);
+            TryAbandonRecurringWave(playerPos);
         }
     }
 
@@ -221,6 +224,28 @@ public class FirstEncounter : MonoBehaviour
         // Keep the committed zombie tracked so a torch trigger can still engage it later.
         _recurringWave.Clear();
         _recurringWave.Add(found);
+    }
+
+    // Despawn any still-dormant wave zombie the player has left far behind. Engaged zombies manage their own
+    // despawn-on-distance, so we only abandon ones that are still idle. Emptying the wave frees the next one.
+    private void TryAbandonRecurringWave(Vector3 playerPos)
+    {
+        float sqrAbandon = recurringAbandonDistance * recurringAbandonDistance;
+
+        for (int i = _recurringWave.Count - 1; i >= 0; i--)
+        {
+            var ai = _recurringWave[i];
+            if (!ai)
+            {
+                _recurringWave.RemoveAt(i);
+                continue;
+            }
+            if (!ai.IsIdle) continue;
+            if ((ai.transform.position - playerPos).sqrMagnitude < sqrAbandon) continue;
+
+            Destroy(ai.gameObject);
+            _recurringWave.RemoveAt(i);
+        }
     }
 
     // Wakes a zombie from the current recurring wave and despawns the rest. Used by the torch trigger so the
