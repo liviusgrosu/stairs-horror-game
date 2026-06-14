@@ -52,7 +52,13 @@ public class TorchManager : MonoBehaviour
     {
         if (!_zombiePrefab) return;
 
-        // If a dormant zombie is already in the scene, wake it instead of spawning another.
+        // Prefer waking a zombie from the recurring wave; this also despawns the rest of that wave.
+        if (FirstEncounter.Instance && FirstEncounter.Instance.EngageRecurringWave())
+        {
+            return;
+        }
+
+        // Otherwise wake any other dormant zombie already in the scene.
         EnemyAI idle = FindIdleZombie();
         if (idle)
         {

@@ -218,7 +218,59 @@ public class FirstEncounter : MonoBehaviour
             if (!ai) continue;
             if (ai != found) Destroy(ai.gameObject);
         }
+        // Keep the committed zombie tracked so a torch trigger can still engage it later.
         _recurringWave.Clear();
+        _recurringWave.Add(found);
+    }
+
+    // Wakes a zombie from the current recurring wave and despawns the rest. Used by the torch trigger so the
+    // player has a single zombie to deal with. Returns the engaged (or already-chasing) zombie, or null if
+    // there is no live wave to engage.
+    public EnemyAI EngageRecurringWave()
+    {
+        if (_recurringWave.Count == 0 || !player) return null;
+
+        // If a wave zombie is already chasing, the encounter is live — leave it be.
+        for (int i = 0; i < _recurringWave.Count; i++)
+        {
+            var ai = _recurringWave[i];
+            if (ai && !IsDead(ai) && !ai.IsIdle) return ai;
+        }
+
+        // Otherwise engage the dormant zombie closest to the player.
+        EnemyAI chosen = null;
+        float bestSqr = float.PositiveInfinity;
+        for (int i = 0; i < _recurringWave.Count; i++)
+        {
+            var ai = _recurringWave[i];
+            if (!ai || !ai.IsIdle) continue;
+
+            float sqr = (ai.transform.position - player.position).sqrMagnitude;
+            if (sqr < bestSqr)
+            {
+                bestSqr = sqr;
+                chosen = ai;
+            }
+        }
+
+        if (!chosen) return null;
+
+        for (int i = 0; i < _recurringWave.Count; i++)
+        {
+            var ai = _recurringWave[i];
+            if (ai && ai != chosen) Destroy(ai.gameObject);
+        }
+        _recurringWave.Clear();
+        _recurringWave.Add(chosen);
+
+        chosen.Engage();
+        return chosen;
+    }
+
+    private static bool IsDead(EnemyAI ai)
+    {
+        var health = ai.GetComponent<EnemyHealth>();
+        return health && health.IsDead;
     }
 
     private static bool IsZombieActive()

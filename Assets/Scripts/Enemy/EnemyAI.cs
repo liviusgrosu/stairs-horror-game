@@ -126,6 +126,9 @@ public class EnemyAI : MonoBehaviour
     {
         if (!Toggle || _health.IsDead || _health.IsTakingHit) return;
         if (_currentState != State.Idle) return;
+        // Engaged deliberately (e.g. by a torch) possibly from far away: don't despawn-on-distance
+        // until it has closed in on the player first.
+        _despawnArmed = false;
         WakeUp();
     }
 
