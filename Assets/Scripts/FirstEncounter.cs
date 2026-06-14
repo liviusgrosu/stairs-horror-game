@@ -18,9 +18,12 @@ public class FirstEncounter : MonoBehaviour
     [Header("Recurring Spawn")]
     [SerializeField] private GameObject zombiePrefab;
     [SerializeField] private float recurringSpawnInterval = 120f;
+    [Tooltip("When the player comes within this range of a dormant recurring zombie, the rest of the wave despawns. Set larger than the enemy's engage distance so the player can move around a found zombie without waking it.")]
+    [SerializeField] private float recurringCommitDistance = 20f;
 
     private readonly Vector3[] _offsets = new Vector3[8];
     private readonly List<BodyEncounter> _spawned = new List<BodyEncounter>();
+    private readonly List<EnemyAI> _recurringWave = new List<EnemyAI>();
     private float _timer;
     private bool _hasSpawned;
     private bool _hasCommitted;
@@ -64,6 +67,11 @@ public class FirstEncounter : MonoBehaviour
                 SpawnEncounters(playerPos, up);
             }
         }
+
+        if (_recurringWave.Count > 0)
+        {
+            TryCommitRecurringWave(playerPos);
+        }
     }
 
     private void SpawnEncounters(Vector3 playerPos, Vector3 up)
@@ -106,17 +114,28 @@ public class FirstEncounter : MonoBehaviour
         return stairs;
     }
 
-    // Spawns the given prefab on a random stair found around the player. Returns the instance, or null if none found.
-    public GameObject SpawnAtRandomStair(GameObject prefab)
+    // Spawns the given zombie prefab on a random stair found around the player. Returns the instance, or null if none found.
+    public void SpawnAtRandomStair(GameObject prefab, bool startEngaged)
     {
-        if (!prefab || !player) return null;
+        if (!prefab || !player) return;
 
         Vector3 up = Vector3.up * verticalHalfLength;
         List<GameObject> stairs = FindStairs(player.position, up);
-        if (stairs.Count == 0) return null;
+        if (stairs.Count == 0) return;
 
         GameObject stair = stairs[Random.Range(0, stairs.Count)];
-        return Instantiate(prefab, stair.transform.position, Quaternion.identity);
+        GameObject instance = CreateZombie(prefab, stair.transform.position, startEngaged);
+        instance.SetActive(true);
+    }
+
+    // Instantiates the zombie prefab and sets its engage state. The prefab is stored inactive, so the caller
+    // must SetActive once any further wiring (e.g. event subscriptions) is in place.
+    private static GameObject CreateZombie(GameObject prefab, Vector3 position, bool startEngaged)
+    {
+        GameObject instance = Instantiate(prefab, position, Quaternion.identity);
+        var ai = instance.GetComponent<EnemyAI>();
+        if (ai) ai.SetStartEngaged(startEngaged);
+        return instance;
     }
 
     private void OnEncounterEntered(BodyEncounter entered)
@@ -141,6 +160,7 @@ public class FirstEncounter : MonoBehaviour
         StartCoroutine(RecurringSpawnLoop());
     }
 
+    // After the body encounter, spawn a wave of dormant zombies every interval, but never while one is already active.
     private IEnumerator RecurringSpawnLoop()
     {
         var wait = new WaitForSeconds(recurringSpawnInterval);
@@ -150,12 +170,55 @@ public class FirstEncounter : MonoBehaviour
 
             if (!zombiePrefab || IsZombieActive()) continue;
 
-            GameObject instance = SpawnAtRandomStair(zombiePrefab);
-            if (!instance) continue;
-
-            var ai = instance.GetComponent<EnemyAI>();
-            if (ai) ai.SetStartEngaged(false);
+            SpawnRecurringWave();
         }
+    }
+
+    // Spawns a dormant zombie on every surrounding stair, the same fashion as the first encounter.
+    private void SpawnRecurringWave()
+    {
+        if (!player) return;
+
+        Vector3 up = Vector3.up * verticalHalfLength;
+
+        _recurringWave.Clear();
+        foreach (GameObject stair in FindStairs(player.position, up))
+        {
+            GameObject instance = CreateZombie(zombiePrefab, stair.transform.position, false);
+            var ai = instance.GetComponent<EnemyAI>();
+            if (ai) _recurringWave.Add(ai);
+            instance.SetActive(true);
+        }
+    }
+
+    // Once the player gets within commit range of any dormant wave zombie, keep that one and despawn the rest.
+    // The kept zombie stays dormant until its own perception engages it, so the player can circle it from
+    // inside the commit range without waking it.
+    private void TryCommitRecurringWave(Vector3 playerPos)
+    {
+        float sqrCommit = recurringCommitDistance * recurringCommitDistance;
+
+        EnemyAI found = null;
+        for (int i = 0; i < _recurringWave.Count; i++)
+        {
+            var ai = _recurringWave[i];
+            if (!ai) continue;
+            if ((ai.transform.position - playerPos).sqrMagnitude <= sqrCommit)
+            {
+                found = ai;
+                break;
+            }
+        }
+
+        if (!found) return;
+
+        for (int i = 0; i < _recurringWave.Count; i++)
+        {
+            var ai = _recurringWave[i];
+            if (!ai) continue;
+            if (ai != found) Destroy(ai.gameObject);
+        }
+        _recurringWave.Clear();
     }
 
     private static bool IsZombieActive()

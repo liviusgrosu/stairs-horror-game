@@ -62,11 +62,7 @@ public class TorchManager : MonoBehaviour
 
         if (!FirstEncounter.Instance) return;
 
-        GameObject instance = FirstEncounter.Instance.SpawnAtRandomStair(_zombiePrefab);
-        if (!instance) return;
-
-        var ai = instance.GetComponent<EnemyAI>();
-        if (ai) ai.SetStartEngaged(true);
+        FirstEncounter.Instance.SpawnAtRandomStair(_zombiePrefab, true);
     }
 
     private static EnemyAI FindIdleZombie()
