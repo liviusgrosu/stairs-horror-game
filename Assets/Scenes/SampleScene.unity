@@ -23099,7 +23099,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyPerception
   _fov: 45
   _verticalSightHeight: 2
-  _litEngageDistance: 15
+  _litEngageDistance: 25
   _darkEngageDistance: 2
   _litInvestigationDistance: 25
   _darkInvestigationDistance: 5
@@ -23125,6 +23125,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   Toggle: 1
+  _startEngaged: 1
+  _startEngagedArmDistance: 10
   _toPlayerRotateAttackSpeed: 100
   animator: {fileID: 1684710363}
 --- !u!195 &768584656

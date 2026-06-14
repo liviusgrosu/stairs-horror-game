@@ -20,6 +20,10 @@ public class EnemyAI : MonoBehaviour
 
     [Header("General")]
     public bool Toggle = true;
+    [Tooltip("Skip Idle/Getting Up and start already chasing the player")]
+    [SerializeField] private bool _startEngaged;
+    [Tooltip("When Start Engaged, despawn-on-distance only arms after the enemy gets within this range of the player")]
+    [SerializeField] private float _startEngagedArmDistance = 10f;
 
     [Header("Attack State")]
     [SerializeField] private float _toPlayerRotateAttackSpeed = 500f;
@@ -27,6 +31,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private Animator animator;
 
     private State _currentState = State.Idle;
+    private bool _pendingStartEngage;
+    private bool _despawnArmed = true;
     private EnemyPerception _perception;
     private EnemyMovement _movement;
     private EnemyHealth _health;
@@ -68,7 +74,15 @@ public class EnemyAI : MonoBehaviour
 
     private void Start()
     {
-        _audio.PlayIdleLoop();
+        if (_startEngaged)
+        {
+            _audio.PlayChaseLoop();
+            _pendingStartEngage = true;
+        }
+        else
+        {
+            _audio.PlayIdleLoop();
+        }
     }
 
     private void OnStimulus(Stimulus s)
@@ -106,6 +120,15 @@ public class EnemyAI : MonoBehaviour
     {
         if (!Toggle || _health.IsTakingHit) return;
 
+        if (_pendingStartEngage)
+        {
+            _pendingStartEngage = false;
+            _despawnArmed = false;
+            animator.Play("Move", 0, 0f);
+            _movement.RunTo(_perception.Player.position);
+            _currentState = State.Move;
+        }
+
         switch (_currentState)
         {
             case State.GettingUp:
@@ -132,7 +155,13 @@ public class EnemyAI : MonoBehaviour
     private void MoveState()
     {
         var distance = GetDistanceFromPlayer;
-        if (distance > _perception.MaxEngageDistance)
+
+        if (!_despawnArmed && distance <= _startEngagedArmDistance)
+        {
+            _despawnArmed = true;
+        }
+
+        if (_despawnArmed && distance > _perception.MaxEngageDistance)
         {
             Destroy(gameObject);
             return;
