@@ -30,6 +30,12 @@ public class EnemyAudio : MonoBehaviour
         {
             MusicManager.Instance.FadeToAmbientMusic();
         }
+
+        if (!_loopAudioSource)
+        {
+            return;
+        }
+        
         _loopAudioSource.Stop();
         _loopAudioSource.clip = _idleSound;
         _loopAudioSource.Play();
@@ -41,6 +47,12 @@ public class EnemyAudio : MonoBehaviour
         {
             MusicManager.Instance.PlayChaseMusic();
         }
+        
+        if (!_loopAudioSource)
+        {
+            return;
+        }
+        
         _loopAudioSource.Stop();
         _loopAudioSource.clip = _chaseSound;
         _loopAudioSource.Play();
@@ -48,6 +60,11 @@ public class EnemyAudio : MonoBehaviour
 
     public void PlayHurt()
     {
+        if (!_oneShotAudioSource)
+        {
+            return;
+        }
+        
         if (_takeDamageSound)
         {
             _oneShotAudioSource.PlayOneShot(_takeDamageSound);
@@ -56,6 +73,11 @@ public class EnemyAudio : MonoBehaviour
 
     public void PlayDie()
     {
+        if (!_oneShotAudioSource)
+        {
+            return;
+        }
+        
         if (_dieSound)
         {
             _oneShotAudioSource.PlayOneShot(_dieSound);
@@ -64,6 +86,11 @@ public class EnemyAudio : MonoBehaviour
 
     public void PlaySuspicious()
     {
+        if (!_oneShotAudioSource)
+        {
+            return;
+        }
+        
         if (_suspiciousSound)
         {
             _oneShotAudioSource.PlayOneShot(_suspiciousSound);
@@ -72,6 +99,11 @@ public class EnemyAudio : MonoBehaviour
 
     public void PlayInvestigate()
     {
+        if (!_oneShotAudioSource)
+        {
+            return;
+        }
+        
         if (_investigateSound)
         {
             _oneShotAudioSource.PlayOneShot(_investigateSound);
@@ -80,6 +112,11 @@ public class EnemyAudio : MonoBehaviour
 
     public void PlayCalmDown()
     {
+        if (!_oneShotAudioSource)
+        {
+            return;
+        }
+        
         if (_calmDownSound)
         {
             _oneShotAudioSource.PlayOneShot(_calmDownSound);

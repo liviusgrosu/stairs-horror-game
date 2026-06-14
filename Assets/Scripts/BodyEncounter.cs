@@ -1,8 +1,11 @@
+using System;
 using UnityEngine;
 
-[RequireComponent(typeof(SphereCollider))]
+[RequireComponent(typeof(CapsuleCollider))]
 public class BodyEncounter : MonoBehaviour
 {
+    public event Action<BodyEncounter> PlayerEntered;
+
     [SerializeField] private GameObject[] objectsToHide;
     [SerializeField] private GameObject[] objectsToShow;
     [SerializeField] private Sway sway;
@@ -44,6 +47,7 @@ public class BodyEncounter : MonoBehaviour
     {
         if (_hasTriggered || !other.CompareTag("Player")) return;
         _playerInside = true;
+        PlayerEntered?.Invoke(this);
     }
 
     private void OnTriggerExit(Collider other)
