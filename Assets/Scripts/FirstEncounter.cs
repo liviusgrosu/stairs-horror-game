@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,6 +14,10 @@ public class FirstEncounter : MonoBehaviour
     [SerializeField] private GameObject zombieHangingPrefab;
     [SerializeField] private string stairsTag = "Stair";
     [SerializeField] private float spawnDelay = 120f;
+
+    [Header("Recurring Spawn")]
+    [SerializeField] private GameObject zombiePrefab;
+    [SerializeField] private float recurringSpawnInterval = 120f;
 
     private readonly Vector3[] _offsets = new Vector3[8];
     private readonly List<BodyEncounter> _spawned = new List<BodyEncounter>();
@@ -126,6 +131,36 @@ public class FirstEncounter : MonoBehaviour
             enc.PlayerEntered -= OnEncounterEntered;
             if (enc != entered) Destroy(enc.gameObject);
         }
+
+        StartCoroutine(RecurringSpawnLoop());
+    }
+
+    // After the body encounter, spawn an idle zombie every interval, but never while one is already active.
+    private IEnumerator RecurringSpawnLoop()
+    {
+        var wait = new WaitForSeconds(recurringSpawnInterval);
+        while (true)
+        {
+            yield return wait;
+
+            if (!zombiePrefab || IsZombieActive()) continue;
+
+            GameObject instance = SpawnAtRandomStair(zombiePrefab);
+            if (!instance) continue;
+
+            var ai = instance.GetComponent<EnemyAI>();
+            if (ai) ai.SetStartEngaged(false);
+        }
+    }
+
+    private static bool IsZombieActive()
+    {
+        foreach (var ai in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
+        {
+            var health = ai.GetComponent<EnemyHealth>();
+            if (!health || !health.IsDead) return true;
+        }
+        return false;
     }
 
     private static float Snap(float value, float step)

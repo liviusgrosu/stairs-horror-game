@@ -1,19 +1,19 @@
-﻿using System.Collections;
 using UnityEngine;
 
 public class MusicManager : MonoBehaviour
 {
     public static MusicManager Instance;
-    
-    private AudioSource _audioSource;
-    [SerializeField]
-    private AudioClip _ambientMusic;
-    [SerializeField]
-    private AudioClip _chaseMusic;
-    [SerializeField]
-    private float _fadeDuration = 2f;
 
-    private Coroutine _fadeCoroutine;
+    [SerializeField] private AudioSource _ambientSource;
+    [SerializeField] private AudioSource _chaseSource;
+    [SerializeField] private AudioClip _ambientMusic;
+    [SerializeField] private AudioClip _chaseMusic;
+    [Tooltip("Volume units per second the chase track fades back to ambient once no enemy is chasing")]
+    [SerializeField] private float _releaseFadeSpeed = 0.5f;
+
+    private float _requestedBlend;
+    private bool _blendRequested;
+    private float _currentBlend;
 
     private void Awake()
     {
@@ -24,65 +24,51 @@ public class MusicManager : MonoBehaviour
         }
 
         Instance = this;
-        _audioSource = GetComponent<AudioSource>();
     }
 
     private void Start()
     {
-        if (_audioSource.clip == _ambientMusic)
-        {
-            return;
-        }
-        
-        _audioSource.Stop();
-        _audioSource.clip = _ambientMusic;
-        _audioSource.volume = 1f;
-        _audioSource.Play();
-    }
-    
-    public void FadeToAmbientMusic()
-    {
-        if (_fadeCoroutine != null)
-        {
-            StopCoroutine(_fadeCoroutine);
-        }
-        _fadeCoroutine = StartCoroutine(FadeOutThenPlay(_ambientMusic));
+        SetupSource(_ambientSource, _ambientMusic, 1f);
+        SetupSource(_chaseSource, _chaseMusic, 0f);
     }
 
-    public void PlayChaseMusic()
+    private static void SetupSource(AudioSource source, AudioClip clip, float volume)
     {
-        if (_audioSource.clip == _chaseMusic)
-        {
-            return;
-        }
-        
-        if (_fadeCoroutine != null)
-        {
-            StopCoroutine(_fadeCoroutine);
-        }
-
-        _audioSource.Stop();
-        _audioSource.clip = _chaseMusic;
-        _audioSource.volume = 1f;
-        _audioSource.Play();
+        if (!source) return;
+        source.clip = clip;
+        source.loop = true;
+        source.volume = volume;
+        source.Play();
     }
 
-    private IEnumerator FadeOutThenPlay(AudioClip nextClip)
+    // Called each frame by a chasing enemy. blend: 0 = full ambient, 1 = full chase.
+    // The closest enemy wins, so we keep the highest blend requested this frame.
+    public void ReportChaseBlend(float blend)
     {
-        var startVolume = _audioSource.volume;
-        var elapsed = 0f;
-
-        while (elapsed < _fadeDuration)
+        blend = Mathf.Clamp01(blend);
+        if (!_blendRequested || blend > _requestedBlend)
         {
-            elapsed += Time.deltaTime;
-            _audioSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / _fadeDuration);
-            yield return null;
+            _requestedBlend = blend;
+        }
+        _blendRequested = true;
+    }
+
+    private void LateUpdate()
+    {
+        if (_blendRequested)
+        {
+            _currentBlend = _requestedBlend;
+        }
+        else
+        {
+            // No enemy chasing this frame: ease back to full ambient instead of snapping.
+            _currentBlend = Mathf.MoveTowards(_currentBlend, 0f, _releaseFadeSpeed * Time.deltaTime);
         }
 
-        _audioSource.Stop();
-        _audioSource.clip = nextClip;
-        _audioSource.volume = 1f;
-        _audioSource.Play();
-        _fadeCoroutine = null;
+        if (_chaseSource) _chaseSource.volume = _currentBlend;
+        if (_ambientSource) _ambientSource.volume = 1f - _currentBlend;
+
+        _blendRequested = false;
+        _requestedBlend = 0f;
     }
 }

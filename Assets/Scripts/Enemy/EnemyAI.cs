@@ -25,6 +25,12 @@ public class EnemyAI : MonoBehaviour
     [Tooltip("When Start Engaged, despawn-on-distance only arms after the enemy gets within this range of the player")]
     [SerializeField] private float _startEngagedArmDistance = 10f;
 
+    [Header("Chase Music")]
+    [Tooltip("At/beyond this distance the chase music is silent (full ambient)")]
+    [SerializeField] private float _chaseMusicFarDistance = 40f;
+    [Tooltip("At/within this distance the chase music is at full volume (no ambient)")]
+    [SerializeField] private float _chaseMusicNearDistance = 10f;
+
     [Header("Attack State")]
     [SerializeField] private float _toPlayerRotateAttackSpeed = 500f;
 
@@ -112,6 +118,17 @@ public class EnemyAI : MonoBehaviour
         _startEngaged = value;
     }
 
+    // True while the enemy is still dormant (spawned non-engaged and not yet disturbed).
+    public bool IsIdle => _currentState == State.Idle && !_health.IsDead;
+
+    // Wakes a dormant enemy so it gets up and chases the player.
+    public void Engage()
+    {
+        if (!Toggle || _health.IsDead || _health.IsTakingHit) return;
+        if (_currentState != State.Idle) return;
+        WakeUp();
+    }
+
     public void Disengage()
     {
         _combat.EndAttack();
@@ -123,6 +140,8 @@ public class EnemyAI : MonoBehaviour
 
     private void Update()
     {
+        ReportChaseMusic();
+
         if (!Toggle || _health.IsTakingHit) return;
 
         if (_pendingStartEngage)
@@ -214,6 +233,16 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    // While engaged, crossfade the music proportionally to how close this enemy is to the player.
+    private void ReportChaseMusic()
+    {
+        if (_health.IsDead || _currentState == State.Idle) return;
+        if (!MusicManager.Instance || _perception == null || !_perception.Player) return;
+
+        float blend = Mathf.InverseLerp(_chaseMusicFarDistance, _chaseMusicNearDistance, GetDistanceFromPlayer);
+        MusicManager.Instance.ReportChaseBlend(blend);
+    }
+
     private void HandleHitStunStart()
     {
         _movement.HardStop();
@@ -247,10 +276,6 @@ public class EnemyAI : MonoBehaviour
 
         _audio.StopAll();
         _audio.PlayDie();
-        if (MusicManager.Instance)
-        {
-            MusicManager.Instance.FadeToAmbientMusic();
-        }
         animator.Play("Die", 0, 0f);
     }
 }

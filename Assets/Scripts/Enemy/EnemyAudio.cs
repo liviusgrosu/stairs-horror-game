@@ -26,16 +26,11 @@ public class EnemyAudio : MonoBehaviour
 
     public void PlayIdleLoop()
     {
-        if (MusicManager.Instance)
-        {
-            MusicManager.Instance.FadeToAmbientMusic();
-        }
-
         if (!_loopAudioSource)
         {
             return;
         }
-        
+
         _loopAudioSource.Stop();
         _loopAudioSource.clip = _idleSound;
         _loopAudioSource.Play();
@@ -43,16 +38,11 @@ public class EnemyAudio : MonoBehaviour
 
     public void PlayChaseLoop()
     {
-        if (MusicManager.Instance)
-        {
-            MusicManager.Instance.PlayChaseMusic();
-        }
-        
         if (!_loopAudioSource)
         {
             return;
         }
-        
+
         _loopAudioSource.Stop();
         _loopAudioSource.clip = _chaseSound;
         _loopAudioSource.Play();

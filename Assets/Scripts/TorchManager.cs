@@ -50,12 +50,31 @@ public class TorchManager : MonoBehaviour
 
     private void SpawnEngagedZombie()
     {
-        if (!_zombiePrefab || !FirstEncounter.Instance) return;
+        if (!_zombiePrefab) return;
+
+        // If a dormant zombie is already in the scene, wake it instead of spawning another.
+        EnemyAI idle = FindIdleZombie();
+        if (idle)
+        {
+            idle.Engage();
+            return;
+        }
+
+        if (!FirstEncounter.Instance) return;
 
         GameObject instance = FirstEncounter.Instance.SpawnAtRandomStair(_zombiePrefab);
         if (!instance) return;
 
         var ai = instance.GetComponent<EnemyAI>();
         if (ai) ai.SetStartEngaged(true);
+    }
+
+    private static EnemyAI FindIdleZombie()
+    {
+        foreach (var ai in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
+        {
+            if (ai.IsIdle) return ai;
+        }
+        return null;
     }
 }
