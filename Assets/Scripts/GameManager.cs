@@ -197,7 +197,7 @@ public class GameManager : MonoBehaviour
 
         ToggleCursorLock(true);
         GameOverScreen.SetActive(true);
-        UpgradeUI.SetActive(false);
+        //UpgradeUI.SetActive(false);
         OverlayUI.SetActive(true);
 
         HasDied = true;

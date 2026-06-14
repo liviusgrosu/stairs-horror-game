@@ -49,7 +49,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 2.447834, z: 2.0899868}
   m_Center: {x: 0, y: 0.723917, z: 0.5449934}
@@ -70,13 +70,14 @@ GameObject:
   - component: {fileID: 8307861582946751201}
   - component: {fileID: 4002428702047463191}
   - component: {fileID: 5232862565518684143}
+  - component: {fileID: 8307861582946751299}
   m_Layer: 8
   m_Name: Zombie
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5337528934332354940
 Transform:
   m_ObjectHideFlags: 0
@@ -131,6 +132,8 @@ MonoBehaviour:
   Toggle: 1
   _startEngaged: 0
   _startEngagedArmDistance: 20
+  _chaseMusicFarDistance: 40
+  _chaseMusicNearDistance: 10
   _toPlayerRotateAttackSpeed: 100
   animator: {fileID: 3213730723778447895}
 --- !u!114 &6536861296087545860
@@ -327,6 +330,33 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!54 &8307861582946751299
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7296180442736720642}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1001 &2360583400295889120
 PrefabInstance:
   m_ObjectHideFlags: 0

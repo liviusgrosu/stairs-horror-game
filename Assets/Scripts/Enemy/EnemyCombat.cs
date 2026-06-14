@@ -53,13 +53,16 @@ public class EnemyCombat : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player")) return;
+
+        if (PlayerHealth.Instance)
         {
             PlayerHealth.Instance.TakeDamage(_attackDamage);
-            if (_damageCollider)
-            {
-                _damageCollider.enabled = false;
-            }
+        }
+
+        if (_damageCollider)
+        {
+            _damageCollider.enabled = false;
         }
     }
 }
