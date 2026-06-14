@@ -5,6 +5,7 @@ using UnityEngine;
 public class BodyEncounter : MonoBehaviour
 {
     public event Action<BodyEncounter> PlayerEntered;
+    public event Action<BodyEncounter> BodyDropped;
 
     [SerializeField] private GameObject[] objectsToHide;
     [SerializeField] private GameObject[] objectsToShow;
@@ -74,5 +75,7 @@ public class BodyEncounter : MonoBehaviour
             sway.amplitudeX *= swayToneDownFactor;
             sway.amplitudeZ *= swayToneDownFactor;
         }
+
+        BodyDropped?.Invoke(this);
     }
 }

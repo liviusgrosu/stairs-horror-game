@@ -132,10 +132,15 @@ public class FirstEncounter : MonoBehaviour
             if (enc != entered) Destroy(enc.gameObject);
         }
 
+        entered.BodyDropped += OnBodyDropped;
+    }
+
+    private void OnBodyDropped(BodyEncounter dropped)
+    {
+        dropped.BodyDropped -= OnBodyDropped;
         StartCoroutine(RecurringSpawnLoop());
     }
 
-    // After the body encounter, spawn an idle zombie every interval, but never while one is already active.
     private IEnumerator RecurringSpawnLoop()
     {
         var wait = new WaitForSeconds(recurringSpawnInterval);
