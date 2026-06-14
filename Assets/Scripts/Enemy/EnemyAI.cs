@@ -107,6 +107,11 @@ public class EnemyAI : MonoBehaviour
         Toggle = true;
     }
 
+    public void SetStartEngaged(bool value)
+    {
+        _startEngaged = value;
+    }
+
     public void Disengage()
     {
         _combat.EndAttack();
