@@ -2,7 +2,6 @@ using UnityEngine;
 
 [RequireComponent(typeof(EnemyPerception))]
 [RequireComponent(typeof(EnemyMovement))]
-[RequireComponent(typeof(EnemyHealth))]
 [RequireComponent(typeof(EnemyCombat))]
 [RequireComponent(typeof(EnemyAudio))]
 public class EnemyAI : MonoBehaviour
@@ -41,7 +40,6 @@ public class EnemyAI : MonoBehaviour
     private bool _despawnArmed = true;
     private EnemyPerception _perception;
     private EnemyMovement _movement;
-    private EnemyHealth _health;
     private EnemyCombat _combat;
     private EnemyAudio _audio;
 
@@ -51,7 +49,6 @@ public class EnemyAI : MonoBehaviour
     {
         _perception = GetComponent<EnemyPerception>();
         _movement = GetComponent<EnemyMovement>();
-        _health = GetComponent<EnemyHealth>();
         _combat = GetComponent<EnemyCombat>();
         _audio = GetComponent<EnemyAudio>();
     }
@@ -59,23 +56,11 @@ public class EnemyAI : MonoBehaviour
     private void OnEnable()
     {
         if (_perception) _perception.OnStimulus += OnStimulus;
-        if (_health)
-        {
-            _health.OnHitStunStart += HandleHitStunStart;
-            _health.OnHitStunEnd += HandleHitStunEnd;
-            _health.OnDied += HandleDied;
-        }
     }
 
     private void OnDisable()
     {
         if (_perception) _perception.OnStimulus -= OnStimulus;
-        if (_health)
-        {
-            _health.OnHitStunStart -= HandleHitStunStart;
-            _health.OnHitStunEnd -= HandleHitStunEnd;
-            _health.OnDied -= HandleDied;
-        }
     }
 
     private void Start()
@@ -93,7 +78,7 @@ public class EnemyAI : MonoBehaviour
 
     private void OnStimulus(Stimulus s)
     {
-        if (!Toggle || _health.IsDead || _health.IsTakingHit) return;
+        if (!Toggle) return;
         if (_currentState != State.Idle) return;
         if (!s.FromPlayer) return;
 
@@ -119,12 +104,12 @@ public class EnemyAI : MonoBehaviour
     }
 
     // True while the enemy is still dormant (spawned non-engaged and not yet disturbed).
-    public bool IsIdle => _currentState == State.Idle && !_health.IsDead;
+    public bool IsIdle => _currentState == State.Idle;
 
     // Wakes a dormant enemy so it gets up and chases the player.
     public void Engage()
     {
-        if (!Toggle || _health.IsDead || _health.IsTakingHit) return;
+        if (!Toggle) return;
         if (_currentState != State.Idle) return;
         // Engaged deliberately (e.g. by a torch) possibly from far away: don't despawn-on-distance
         // until it has closed in on the player first.
@@ -145,7 +130,7 @@ public class EnemyAI : MonoBehaviour
     {
         ReportChaseMusic();
 
-        if (!Toggle || _health.IsTakingHit) return;
+        if (!Toggle) return;
 
         if (_pendingStartEngage)
         {
@@ -239,46 +224,10 @@ public class EnemyAI : MonoBehaviour
     // While engaged, crossfade the music proportionally to how close this enemy is to the player.
     private void ReportChaseMusic()
     {
-        if (_health.IsDead || _currentState == State.Idle) return;
+        if (_currentState == State.Idle) return;
         if (!MusicManager.Instance || _perception == null || !_perception.Player) return;
 
         float blend = Mathf.InverseLerp(_chaseMusicFarDistance, _chaseMusicNearDistance, GetDistanceFromPlayer);
         MusicManager.Instance.ReportChaseBlend(blend);
-    }
-
-    private void HandleHitStunStart()
-    {
-        _movement.HardStop();
-        _audio.PlayHurt();
-        animator.CrossFadeInFixedTime("Take Hit", 0.1f, 0);
-    }
-
-    private void HandleHitStunEnd()
-    {
-        if (_currentState == State.Attack)
-        {
-            _combat.ResetCooldown();
-            animator.SetBool(IsAttacking, true);
-            animator.Play("Attack", 0, 0f);
-            return;
-        }
-
-        _movement.Resume();
-        _movement.SetDestination(_perception.Player.position);
-    }
-
-    private void HandleDied()
-    {
-        Toggle = false;
-        _movement.Disable();
-
-        foreach (var col in GetComponentsInChildren<Collider>())
-        {
-            col.enabled = false;
-        }
-
-        _audio.StopAll();
-        _audio.PlayDie();
-        animator.Play("Die", 0, 0f);
     }
 }

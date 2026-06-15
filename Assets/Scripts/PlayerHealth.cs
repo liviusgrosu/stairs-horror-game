@@ -24,12 +24,8 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float _hitFlashDuration = 0.5f;
     private Coroutine _hitFlashCoroutine;
 
-    [Header("Consumables")]
-    [SerializeField] private InventoryItem _healthBottle;
-
     [Header("Sound Effects")]
     [SerializeField] private AudioClip[] gettingHitSFX;
-    [SerializeField] private AudioClip healthBottleUseSFX;
     [SerializeField] private AudioClip deathSFX;
     [SerializeField] private AudioClip knuckleCrackSFX;
     private AudioSource _audioSource;
@@ -57,35 +53,6 @@ public class PlayerHealth : MonoBehaviour
         _currentHealth = MaxHealth;
         UpdateVignette();
         UpdateHealthStatus();
-    }
-
-    /*private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.H) && !GameManager.Instance.IsPaused)
-        {
-            UseHealthBottle();
-        }
-    }*/
-
-    public void UseHealthBottle()
-    {
-        if (!_healthBottle || _currentHealth >= MaxHealth)
-        {
-            return;
-        }
-
-        if (Inventory.Instance.GetCount(_healthBottle) <= 0)
-        {
-            return;
-        }
-
-        Heal(25);
-        Inventory.Instance.Remove(_healthBottle, 1);
-
-        if (healthBottleUseSFX && _audioSource)
-        {
-            _audioSource.PlayOneShot(healthBottleUseSFX);
-        }
     }
 
     public void TakeDamage(int amount)

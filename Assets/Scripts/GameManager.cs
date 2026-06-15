@@ -15,7 +15,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject _pickupIcon;
     
     public GameObject OverlayUI;
-    public GameObject UpgradeUI;
     public GameObject GameOverScreen;
     
     public bool InMenu;
@@ -31,8 +30,6 @@ public class GameManager : MonoBehaviour
     public bool IsPaused;
 
     [SerializeField] private GameObject _controlsOverlay;
-    [SerializeField] private GameObject _inventoryUI;
-    [SerializeField] private GameObject _viewGemScreenUI;
 
     [SerializeField] private CanvasGroup _mineralStatsCanvasGroup;
     private Coroutine _mineralStatsCoroutine;
@@ -59,77 +56,7 @@ public class GameManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape) && !HasWon && !HasDied)
         {
-            if (UpgradeUI && UpgradeUI.activeSelf)
-            {
-                CloseUpgradeUI();
-                return;
-            }
-
-            if (_viewGemScreenUI && _viewGemScreenUI.activeSelf)
-            {
-                ToggleViewGemScreen();
-                return;
-            }
-
-            if (_inventoryUI && _inventoryUI.activeSelf)
-            {
-                ToggleInventory();
-                return;
-            }
-
             ToggleControlsOverlay();
-        }
-
-        /*
-        if (Input.GetKeyDown(KeyCode.I) && !HasWon && !HasDied)
-        {
-            var gemUI = GemSelectionUI.Instance;
-            if (gemUI && gemUI.IsOpen)
-            {
-                return;
-            }
-
-            if (UpgradeUI && UpgradeUI.activeSelf)
-            {
-                return;
-            }
-
-            ToggleInventory();
-        }
-        */
-
-        /*if (Input.GetKeyDown(KeyCode.G) && !HasWon && !HasDied)
-        {
-            var gemUI = GemSelectionUI.Instance;
-            if (gemUI && gemUI.IsOpen)
-            {
-                return;
-            }
-
-            if (UpgradeUI && UpgradeUI.activeSelf)
-            {
-                return;
-            }
-
-            ToggleViewGemScreen();
-        }*/
-        
-        if (!HasDied && !HasWon)
-        {
-            /*if (!InMenu && Input.GetKeyDown(KeyCode.Tab))
-            {
-                IsPaused = true;
-                InMenu = true;
-                GemSelectionUI.Instance.OpenScreen();
-                ToggleCursorLock(true);
-            }
-            else if (Input.GetKeyUp(KeyCode.Tab) && GemSelectionUI.Instance && GemSelectionUI.Instance.IsOpen)
-            {
-                IsPaused = false;
-                InMenu = false;
-                GemSelectionUI.Instance.CloseScreen();
-                ToggleCursorLock(false);
-            }*/
         }
     }
 
@@ -164,22 +91,6 @@ public class GameManager : MonoBehaviour
         _questionMarkIcon.SetActive(false);
     }
 
-    public void OpenUpgradeUI()
-    {
-        ToggleCursorLock(true);
-        OverlayUI.SetActive(false);
-        UpgradeUI.SetActive(true);
-        InMenu = true;
-    }
-    
-    public void CloseUpgradeUI()
-    {
-        ToggleCursorLock(false);
-        OverlayUI.SetActive(true);
-        UpgradeUI.SetActive(false);
-        InMenu = false;
-    }
-
     public void OpenGameOverScreen()
     {
         player.GetComponent<CharacterController>().height = 0.1f;
@@ -197,7 +108,6 @@ public class GameManager : MonoBehaviour
 
         ToggleCursorLock(true);
         GameOverScreen.SetActive(true);
-        //UpgradeUI.SetActive(false);
         OverlayUI.SetActive(true);
 
         HasDied = true;
@@ -296,69 +206,10 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
-    public void ToggleInventory()
-    {
-        var isOpen = _inventoryUI && _inventoryUI.activeSelf;
-        CloseAllMenus();
-
-        if (isOpen)
-        {
-            return;
-        }
-
-        IsPaused = true;
-        InMenu = true;
-
-        if (_inventoryUI)
-        {
-            _inventoryUI.SetActive(true);
-        }
-
-        if (PickupNotification.Instance)
-        {
-            PickupNotification.Instance.ClearAll();
-        }
-
-        ToggleCursorLock(true);
-        Time.timeScale = 0f;
-    }
-
-    public void ToggleViewGemScreen()
-    {
-        var isOpen = _viewGemScreenUI && _viewGemScreenUI.activeSelf;
-        CloseAllMenus();
-
-        if (isOpen)
-        {
-            return;
-        }
-
-        IsPaused = true;
-        InMenu = true;
-
-        if (_viewGemScreenUI)
-        {
-            _viewGemScreenUI.SetActive(true);
-        }
-
-        ToggleCursorLock(true);
-        Time.timeScale = 0f;
-    }
-
     private void CloseAllMenus()
     {
         IsPaused = false;
         InMenu = false;
-
-        if (_inventoryUI)
-        {
-            _inventoryUI.SetActive(false);
-        }
-
-        if (_viewGemScreenUI)
-        {
-            _viewGemScreenUI.SetActive(false);
-        }
 
         if (_controlsOverlay)
         {
