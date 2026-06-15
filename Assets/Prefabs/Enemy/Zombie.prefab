@@ -66,7 +66,6 @@ GameObject:
   - component: {fileID: 567019072896233825}
   - component: {fileID: 6536861296087545860}
   - component: {fileID: 9205513178520828182}
-  - component: {fileID: 7132992747297567583}
   - component: {fileID: 8307861582946751201}
   - component: {fileID: 4002428702047463191}
   - component: {fileID: 5232862565518684143}
@@ -179,22 +178,6 @@ MonoBehaviour:
   _runSpeed: 5
   _angularSpeed: 500
   _stayInPlace: 0
---- !u!114 &7132992747297567583
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7296180442736720642}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d483ac0fecc356642b7f4bc3bf394905, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  _maxHealth: 100
-  _hitStunDuration: 0.5
-  _bloodPool: {fileID: 0}
-  _bloodPoolExpandTime: 3
 --- !u!114 &8307861582946751201
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -6,6 +6,9 @@ public class FirstEncounter : MonoBehaviour
 {
     public static FirstEncounter Instance;
 
+    [Tooltip("Master switch. When off, no encounters or recurring zombies spawn at all.")]
+    [SerializeField] private bool enableSpawning = true;
+
     [SerializeField] private Transform player;
     [SerializeField] private float distance = 40f;
     [SerializeField] private float verticalHalfLength = 20f;
@@ -52,6 +55,7 @@ public class FirstEncounter : MonoBehaviour
 
     private void Update()
     {
+        if (!enableSpawning) return;
         if (!player) return;
 
         Vector3 playerPos = player.position;
@@ -98,7 +102,6 @@ public class FirstEncounter : MonoBehaviour
         _hasSpawned = _spawned.Count > 0;
     }
 
-    // Raycasts down from each surrounding offset and returns the unique stairs found around the player.
     private List<GameObject> FindStairs(Vector3 playerPos, Vector3 up)
     {
         var stairs = new List<GameObject>();
@@ -120,10 +123,9 @@ public class FirstEncounter : MonoBehaviour
         return stairs;
     }
 
-    // Spawns the given zombie prefab on a random stair found around the player. Returns the instance, or null if none found.
     public void SpawnAtRandomStair(GameObject prefab, bool startEngaged)
     {
-        if (!prefab || !player) return;
+        if (!enableSpawning || !prefab || !player) return;
 
         Vector3 up = Vector3.up * verticalHalfLength;
         List<GameObject> stairs = FindStairs(player.position, up);
@@ -134,8 +136,6 @@ public class FirstEncounter : MonoBehaviour
         instance.SetActive(true);
     }
 
-    // Instantiates the zombie prefab and sets its engage state. The prefab is stored inactive, so the caller
-    // must SetActive once any further wiring (e.g. event subscriptions) is in place.
     private static GameObject CreateZombie(GameObject prefab, Vector3 position, bool startEngaged)
     {
         GameObject instance = Instantiate(prefab, position, Quaternion.identity);
@@ -166,7 +166,6 @@ public class FirstEncounter : MonoBehaviour
         StartCoroutine(RecurringSpawnLoop());
     }
 
-    // After the body encounter, spawn a wave of dormant zombies every interval, but never while one is already active.
     private IEnumerator RecurringSpawnLoop()
     {
         var wait = new WaitForSeconds(recurringSpawnInterval);
@@ -180,7 +179,6 @@ public class FirstEncounter : MonoBehaviour
         }
     }
 
-    // Spawns a dormant zombie on every surrounding stair, the same fashion as the first encounter.
     private void SpawnRecurringWave()
     {
         if (!player) return;
@@ -198,9 +196,6 @@ public class FirstEncounter : MonoBehaviour
         }
     }
 
-    // Once the player gets within commit range of any dormant wave zombie, keep that one and despawn the rest.
-    // The kept zombie stays dormant until its own perception engages it, so the player can circle it from
-    // inside the commit range without waking it.
     private void TryCommitRecurringWave(Vector3 playerPos)
     {
         float sqrCommit = recurringCommitDistance * recurringCommitDistance;
@@ -225,17 +220,11 @@ public class FirstEncounter : MonoBehaviour
             if (!ai) continue;
             if (ai != found) Destroy(ai.gameObject);
         }
-        // Keep the committed zombie tracked so a torch trigger can still engage it later.
         _recurringWave.Clear();
         _recurringWave.Add(found);
         _recurringCommitted = true;
     }
-
-    // Only runs after the wave is committed (one zombie tracked). Despawns that committed zombie if it is still
-    // dormant and the player has left it farther than the abandon distance. Uncommitted waves are never culled
-    // this way, so approaching the circle spawn always leaves the ring intact until the player commits. Engaged
-    // zombies manage their own despawn-on-distance, so we only abandon ones that are still idle. Emptying the
-    // wave frees the next one.
+    
     private void TryAbandonRecurringWave(Vector3 playerPos)
     {
         float sqrAbandon = recurringAbandonDistance * recurringAbandonDistance;
@@ -255,22 +244,17 @@ public class FirstEncounter : MonoBehaviour
             _recurringWave.RemoveAt(i);
         }
     }
-
-    // Wakes a zombie from the current recurring wave and despawns the rest. Used by the torch trigger so the
-    // player has a single zombie to deal with. Returns the engaged (or already-chasing) zombie, or null if
-    // there is no live wave to engage.
+    
     public EnemyAI EngageRecurringWave()
     {
         if (_recurringWave.Count == 0 || !player) return null;
 
-        // If a wave zombie is already chasing, the encounter is live — leave it be.
         for (int i = 0; i < _recurringWave.Count; i++)
         {
             var ai = _recurringWave[i];
             if (ai && !ai.IsIdle) return ai;
         }
 
-        // Otherwise engage the dormant zombie closest to the player.
         EnemyAI chosen = null;
         float bestSqr = float.PositiveInfinity;
         for (int i = 0; i < _recurringWave.Count; i++)
@@ -300,8 +284,6 @@ public class FirstEncounter : MonoBehaviour
         return chosen;
     }
 
-    // Enemies can no longer die — any zombie that still exists counts as active. Recurring zombies are
-    // removed via Destroy (despawn-on-distance / wave abandonment), which clears this.
     private static bool IsZombieActive()
     {
         return FindObjectsByType<EnemyAI>(FindObjectsSortMode.None).Length > 0;

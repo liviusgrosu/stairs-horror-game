@@ -10,8 +10,6 @@ public class CameraHitEffect : MonoBehaviour
     [SerializeField]
     private float maxPitchOffset = 15f;
     [SerializeField]
-    private float downwardPitchOffset = 25f;
-    [SerializeField]
     private float recoverySpeed = 2f;
 
     private Vector3 _rotationOffset;
@@ -49,10 +47,5 @@ public class CameraHitEffect : MonoBehaviour
         var yaw = Random.Range(-maxYawOffset, maxYawOffset);
         var pitch = Random.Range(-maxPitchOffset, maxPitchOffset);
         _rotationOffset = new Vector3(pitch, yaw, 0f);
-    }
-
-    public void ApplyDownwardHit()
-    {
-        _rotationOffset = new Vector3(downwardPitchOffset, 0f, 0f);
     }
 }
