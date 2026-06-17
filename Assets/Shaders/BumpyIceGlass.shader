@@ -17,6 +17,14 @@ Shader "Custom/BumpyIceGlass"
         _BumpScale       ("Bump Tiling", Float) = 8.0
         _BumpStrength    ("Bump Strength", Range(0,1)) = 0.25
 
+        [Header(Cracks)]
+        [Toggle(_CRACKS_ON)] _Cracks ("Enable Cracks", Float) = 1
+        _CrackColor      ("Crack Color", Color) = (0.92, 0.97, 1.0, 1)
+        _CrackScale      ("Crack Scale (density)", Float) = 4.0
+        _CrackWidth      ("Crack Width", Range(0.001, 0.3)) = 0.06
+        _CrackIntensity  ("Crack Intensity", Range(0, 3)) = 1.2
+        _CrackGroove     ("Crack Normal Groove", Range(0, 1)) = 0.3
+
         [Header(Refraction (needs Opaque Texture ON))]
         _RefractStrength ("Refraction Strength", Range(0, 0.2)) = 0.04
 
@@ -50,6 +58,7 @@ Shader "Custom/BumpyIceGlass"
             #pragma fragment frag
             #pragma shader_feature_local _FACETED_ON
             #pragma shader_feature_local _PIXELATE_ON
+            #pragma shader_feature_local _CRACKS_ON
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -82,6 +91,11 @@ Shader "Custom/BumpyIceGlass"
                 float  _BumpStrength;
                 float  _RefractStrength;
                 float  _PixelSize;
+                float4 _CrackColor;
+                float  _CrackScale;
+                float  _CrackWidth;
+                float  _CrackIntensity;
+                float  _CrackGroove;
             CBUFFER_END
 
             // --- cheap hash / value noise for procedural bumps ---
@@ -118,6 +132,52 @@ Shader "Custom/BumpyIceGlass"
                 return lerp(y0, y1, f.z);
             }
 
+            // 3D vector hash for Voronoi feature points
+            float3 hash33(float3 p)
+            {
+                p = float3(dot(p, float3(127.1, 311.7,  74.7)),
+                           dot(p, float3(269.5, 183.3, 246.1)),
+                           dot(p, float3(113.5, 271.9, 124.6)));
+                return frac(sin(p) * 43758.5453123);
+            }
+
+            // Voronoi edge distance: returns (F2 - F1). It approaches 0 along the
+            // borders between cells, which we threshold into thin crack lines.
+            float voronoiEdge(float3 x)
+            {
+                float3 p = floor(x);
+                float3 f = frac(x);
+
+                float f1 = 8.0;
+                float f2 = 8.0;
+                [unroll]
+                for (int k = -1; k <= 1; k++)
+                [unroll]
+                for (int j = -1; j <= 1; j++)
+                [unroll]
+                for (int i = -1; i <= 1; i++)
+                {
+                    float3 g = float3(i, j, k);
+                    float3 o = hash33(p + g);
+                    float3 r = g + o - f;
+                    float d = dot(r, r);
+                    if (d < f1)      { f2 = f1; f1 = d; }
+                    else if (d < f2) { f2 = d; }
+                }
+                return sqrt(f2) - sqrt(f1);
+            }
+
+            // Crack mask + screen-space gradient (for grooving the normal).
+            // Returns mask in .x, gradient in .yz (d(mask)/d(screen)).
+            float crackMask(float3 posWS, out float dMaskX, out float dMaskY)
+            {
+                float edge  = voronoiEdge(posWS * _CrackScale);
+                float mask  = saturate((1.0 - smoothstep(0.0, _CrackWidth, edge)) * _CrackIntensity);
+                dMaskX = ddx(mask);
+                dMaskY = ddy(mask);
+                return mask;
+            }
+
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
@@ -134,6 +194,11 @@ Shader "Custom/BumpyIceGlass"
                 float3 posWS    = IN.positionWS;
                 float2 screenUV = IN.screenPos.xy / IN.screenPos.w;
 
+                // world-space derivatives (constant per triangle) — shared by the
+                // faceted normal, pixel reconstruction, and crack grooving
+                float3 dpx = ddx(IN.positionWS);
+                float3 dpy = ddy(IN.positionWS);
+
                 // --- pixelation: snap to a screen-pixel grid, then reconstruct the
                 //     world position at the block's representative pixel so ALL shading
                 //     (lighting, fresnel, refraction) quantizes into chunky blocks ---
@@ -143,7 +208,7 @@ Shader "Custom/BumpyIceGlass"
                 float2 snapped    = (floor(pixelCoord / blockSize) + 0.5) * blockSize;
                 float2 deltaPx    = snapped - pixelCoord;          // offset to block center
                 // shift world pos along screen-space derivatives to the block center
-                posWS    += ddx(IN.positionWS) * deltaPx.x + ddy(IN.positionWS) * deltaPx.y;
+                posWS    += dpx * deltaPx.x + dpy * deltaPx.y;
                 screenUV  = snapped / _ScreenParams.xy;
             #endif
 
@@ -152,8 +217,6 @@ Shader "Custom/BumpyIceGlass"
             #ifdef _FACETED_ON
                 // Derive a flat per-triangle normal from world-pos derivatives.
                 // This gives the lowpoly faceted look regardless of mesh smoothing.
-                float3 dpx = ddx(IN.positionWS);
-                float3 dpy = ddy(IN.positionWS);
                 N = normalize(cross(dpy, dpx));
                 // keep it facing the same hemisphere as the interpolated normal
                 N *= sign(dot(N, IN.normalWS));
@@ -170,6 +233,18 @@ Shader "Custom/BumpyIceGlass"
                 float nZ = valueNoise(sp + float3(0,0,e));
                 float3 grad = float3(nX - nC, nY - nC, nZ - nC) / e;
                 N = normalize(N - grad * _BumpStrength);
+
+                // --- cracks: thin voronoi-edge fracture lines ---
+                float crack = 0.0;
+            #ifdef _CRACKS_ON
+                float dMaskX, dMaskY;
+                crack = crackMask(posWS, dMaskX, dMaskY);
+                // tilt the normal into a V-groove along the crack so it catches light
+                float3 grooveDir = normalize(dpx) * dMaskX + normalize(dpy) * dMaskY;
+                float  gl = length(grooveDir);
+                grooveDir = (gl > 1e-5) ? grooveDir / gl : float3(0, 0, 0);
+                N = normalize(N - grooveDir * crack * _CrackGroove);
+            #endif
 
                 float3 V = GetWorldSpaceNormalizeViewDir(posWS);
 
@@ -194,8 +269,11 @@ Shader "Custom/BumpyIceGlass"
                 lit += spec * mainLight.color;
                 lit += fres * _RimColor.rgb * _RimStrength;
 
-                // brighten alpha where specular/rim hit so highlights read as solid glints
-                alpha = saturate(alpha + spec + fres * 0.15);
+                // cracks tint toward the crack color and read as brighter, more solid lines
+                lit = lerp(lit, _CrackColor.rgb, crack);
+
+                // brighten alpha where specular/rim/cracks hit so they read as solid glints
+                alpha = saturate(alpha + spec + fres * 0.15 + crack * 0.5);
 
                 return half4(lit, alpha);
             }

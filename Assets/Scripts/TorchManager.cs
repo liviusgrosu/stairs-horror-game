@@ -11,6 +11,13 @@ public class TorchManager : MonoBehaviour
     [SerializeField] private GameObject _zombiePrefab;
     [SerializeField] private float _secondTorchSpawnDelay = 60f;
 
+    [Header("Ice Cracks")]
+    [SerializeField] private Material _iceMaterial;
+    [SerializeField] private float _crackIntensityUnlit = 0.2f;
+    [SerializeField] private float _crackIntensityLit = 1f;
+
+    private static readonly int CrackIntensityID = Shader.PropertyToID("_CrackIntensity");
+
     private int _usedCount;
 
     private void Awake()
@@ -21,6 +28,16 @@ public class TorchManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        SetCrackIntensity(_crackIntensityUnlit);
+    }
+
+    private void SetCrackIntensity(float value)
+    {
+        if (_iceMaterial)
+        {
+            _iceMaterial.SetFloat(CrackIntensityID, value);
+        }
     }
 
     public void NotifyTorchUsed()
@@ -29,6 +46,7 @@ public class TorchManager : MonoBehaviour
 
         if (_usedCount == 1)
         {
+            SetCrackIntensity(_crackIntensityLit);
             SpawnEngagedZombie();
         }
         else if (_usedCount == 2)
