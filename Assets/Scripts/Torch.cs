@@ -5,7 +5,6 @@ public class Torch : MonoBehaviour
 {
     [SerializeField] private Animator _animator;
     [SerializeField] private GameObject _emberBall;
-    [SerializeField] private ParticleSystem _flameParticles;
     [SerializeField] private float _audioFadeDuration = 2f;
 
     [Header("Ray Growth")]
@@ -28,16 +27,6 @@ public class Torch : MonoBehaviour
         {
             _animator = GetComponent<Animator>();
         }
-
-        if (!_flameParticles)
-        {
-            _flameParticles = GetComponentInChildren<ParticleSystem>();
-        }
-
-        /*if (_emberBall)
-        {
-            _emberBall.SetActive(false);
-        }*/
     }
 
     public void Interact()
@@ -53,11 +42,6 @@ public class Torch : MonoBehaviour
 
         // Mark used immediately so the torch can't be re-triggered mid-animation.
         _used = true;
-
-        if (_ray)
-        {
-            StartCoroutine(GrowRay());
-        }
 
         if (_animator)
         {
@@ -99,11 +83,11 @@ public class Torch : MonoBehaviour
     // Runs once the light animation has finished.
     public void OnTorchLit()
     {
-        if (_flameParticles)
+        if (_ray)
         {
-            _flameParticles.Play();
+            StartCoroutine(GrowRay());
         }
-
+        
         PlayRiseAudio();
 
         if (TorchManager.Instance)
