@@ -67,7 +67,6 @@ public class EnemyAI : MonoBehaviour
     {
         if (_startEngaged)
         {
-            _audio.PlayChaseLoop();
             _pendingStartEngage = true;
         }
         else
@@ -89,7 +88,8 @@ public class EnemyAI : MonoBehaviour
     {
         _movement.Cancel();
         animator.SetTrigger(GetUpTrigger);
-        _audio.PlayChaseLoop();
+        _audio.PlayScream();
+        _audio.StopLoop();
         _currentState = State.GettingUp;
     }
 
@@ -137,6 +137,7 @@ public class EnemyAI : MonoBehaviour
             _pendingStartEngage = false;
             _despawnArmed = false;
             animator.Play("Move", 0, 0f);
+            _audio.PlayChaseLoop();
             _movement.RunTo(_perception.Player.position);
             _currentState = State.Move;
         }
@@ -160,6 +161,7 @@ public class EnemyAI : MonoBehaviour
         var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
         if (!stateInfo.IsName("Move")) return;
 
+        _audio.PlayChaseLoop();
         _movement.RunTo(_perception.Player.position);
         _currentState = State.Move;
     }
@@ -224,7 +226,7 @@ public class EnemyAI : MonoBehaviour
     // While engaged, crossfade the music proportionally to how close this enemy is to the player.
     private void ReportChaseMusic()
     {
-        if (_currentState == State.Idle) return;
+        if (_currentState is State.Idle or State.GettingUp) return;
         if (!MusicManager.Instance || _perception == null || !_perception.Player) return;
 
         float blend = Mathf.InverseLerp(_chaseMusicFarDistance, _chaseMusicNearDistance, GetDistanceFromPlayer);

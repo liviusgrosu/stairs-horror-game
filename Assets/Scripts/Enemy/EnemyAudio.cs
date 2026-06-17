@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class EnemyAudio : MonoBehaviour
@@ -7,20 +8,34 @@ public class EnemyAudio : MonoBehaviour
 
     [SerializeField] private AudioClip _idleSound;
     [SerializeField] private AudioClip _chaseSound;
+    [SerializeField] private AudioClip _screamSound;
     [SerializeField] private AudioClip _takeDamageSound;
     [SerializeField] private AudioClip _dieSound;
     [SerializeField] private AudioClip _suspiciousSound;
     [SerializeField] private AudioClip _investigateSound;
     [SerializeField] private AudioClip _calmDownSound;
 
+    [Header("Scream")]
+    [Tooltip("Spatial blend the one-shot source drops to while the scream plays, so it carries farther (0 = fully 2D/global, 1 = fully 3D)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _screamSpatialBlend = 0.2f;
+
     [Header("Debug")]
     [SerializeField] private bool _shutUpPlease;
+
+    private float _oneShotDefaultSpatialBlend = 1f;
+    private Coroutine _restoreSpatialBlendRoutine;
 
     private void Awake()
     {
         if (_loopAudioSource)
         {
             _loopAudioSource.enabled = !_shutUpPlease;
+        }
+
+        if (_oneShotAudioSource)
+        {
+            _oneShotDefaultSpatialBlend = _oneShotAudioSource.spatialBlend;
         }
     }
 
@@ -48,68 +63,40 @@ public class EnemyAudio : MonoBehaviour
         _loopAudioSource.Play();
     }
 
-    public void PlayHurt()
+    public void PlayScream()
     {
         if (!_oneShotAudioSource)
         {
             return;
         }
-        
-        if (_takeDamageSound)
+
+        if (_screamSound)
         {
-            _oneShotAudioSource.PlayOneShot(_takeDamageSound);
+            // Temporarily make the scream more 2D so it's heard from farther away,
+            // then restore the source's normal 3D blend once it finishes.
+            if (_restoreSpatialBlendRoutine != null)
+            {
+                StopCoroutine(_restoreSpatialBlendRoutine);
+            }
+
+            _oneShotAudioSource.spatialBlend = _screamSpatialBlend;
+            _oneShotAudioSource.PlayOneShot(_screamSound);
+            _restoreSpatialBlendRoutine = StartCoroutine(RestoreSpatialBlendAfter(_screamSound.length));
         }
     }
 
-    public void PlayDie()
+    private IEnumerator RestoreSpatialBlendAfter(float delay)
     {
-        if (!_oneShotAudioSource)
-        {
-            return;
-        }
-        
-        if (_dieSound)
-        {
-            _oneShotAudioSource.PlayOneShot(_dieSound);
-        }
+        yield return new WaitForSeconds(delay);
+        _oneShotAudioSource.spatialBlend = _oneShotDefaultSpatialBlend;
+        _restoreSpatialBlendRoutine = null;
     }
-
-    public void PlaySuspicious()
+    
+    public void StopLoop()
     {
-        if (!_oneShotAudioSource)
+        if (_loopAudioSource)
         {
-            return;
-        }
-        
-        if (_suspiciousSound)
-        {
-            _oneShotAudioSource.PlayOneShot(_suspiciousSound);
-        }
-    }
-
-    public void PlayInvestigate()
-    {
-        if (!_oneShotAudioSource)
-        {
-            return;
-        }
-        
-        if (_investigateSound)
-        {
-            _oneShotAudioSource.PlayOneShot(_investigateSound);
-        }
-    }
-
-    public void PlayCalmDown()
-    {
-        if (!_oneShotAudioSource)
-        {
-            return;
-        }
-        
-        if (_calmDownSound)
-        {
-            _oneShotAudioSource.PlayOneShot(_calmDownSound);
+            _loopAudioSource.Stop();
         }
     }
 
