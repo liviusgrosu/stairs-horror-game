@@ -93,6 +93,7 @@ public class PlayerMovement : MonoBehaviour
         _standingHeight = _controller.height;
         _standingCenter = _controller.center;
         _standingCameraHeight = _camera.transform.localPosition.y;
+        _currentCameraOffset = _standingCameraHeight;
 
         var capsuleBottom = _standingCenter.y - _standingHeight / 2f;
         var proportion = (_standingCameraHeight - capsuleBottom) / _standingHeight;
