@@ -440,7 +440,7 @@ MonoBehaviour:
   ignoreMask:
     serializedVersion: 2
     m_Bits: 4
-  _pickupSound: {fileID: 8300000, guid: 8c5eb638b221aa14ca3e54372ba2ccae, type: 3}
+  _pickupSound: {fileID: 8300000, guid: ed7b6775ce8498747926e1cf21cff5ca, type: 3}
 --- !u!114 &8016013582615741529
 MonoBehaviour:
   m_ObjectHideFlags: 0

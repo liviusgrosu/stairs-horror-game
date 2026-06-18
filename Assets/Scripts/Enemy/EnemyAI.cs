@@ -111,7 +111,7 @@ public class EnemyAI : MonoBehaviour
     {
         if (!Toggle) return;
         if (_currentState != State.Idle) return;
-        // Engaged deliberately (e.g. by a torch) possibly from far away: don't despawn-on-distance
+        // Engaged deliberately (e.g. by a furnace) possibly from far away: don't despawn-on-distance
         // until it has closed in on the player first.
         _despawnArmed = false;
         WakeUp();

@@ -22,9 +22,11 @@ public class GameManager : MonoBehaviour
     private bool triggeredFirstChase, triggeredSecondChase;
 
     [SerializeField]
-    private TextMeshProUGUI _entranceDoorText, _normalRockHoverText, _mineralDepositHoverText, _blockageRockHoverText, _usedTorchText, _lockedDoorText;
+    private TextMeshProUGUI _entranceDoorText, _normalRockHoverText, _mineralDepositHoverText, _blockageRockHoverText, _usedFurnaceText, _lockedDoorText, _needFurnaceItemText;
     private bool DisplayingHoverText;
     private Coroutine _hoverTextCoroutine;
+
+    private int _emberBallsHeld;
 
     public bool HasWon, HasDied;
     public bool IsPaused;
@@ -280,16 +282,49 @@ public class GameManager : MonoBehaviour
         _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_mineralDepositHoverText));
     }
 
-    public void ShowUsedTorchText()
+    public void ShowUsedFurnaceText()
     {
-        if (DisplayingHoverText || !_usedTorchText)
+        if (DisplayingHoverText || !_usedFurnaceText)
         {
             return;
         }
 
         DisplayingHoverText = true;
         if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
-        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_usedTorchText));
+        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_usedFurnaceText));
+    }
+
+    public void ShowNeedFurnaceItemText()
+    {
+        if (DisplayingHoverText || !_needFurnaceItemText)
+        {
+            return;
+        }
+
+        DisplayingHoverText = true;
+        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
+        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_needFurnaceItemText));
+    }
+
+    // --- Ember ball inventory ---
+
+    public int EmberBallsHeld => _emberBallsHeld;
+
+    public void AddEmberBall()
+    {
+        _emberBallsHeld++;
+    }
+
+    // Consumes one ember ball if any are held. Returns false when the player has none.
+    public bool TryUseEmberBall()
+    {
+        if (_emberBallsHeld <= 0)
+        {
+            return false;
+        }
+
+        _emberBallsHeld--;
+        return true;
     }
 
     public void ShowLockedDoorText()

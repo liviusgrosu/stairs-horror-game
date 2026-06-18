@@ -44,9 +44,13 @@ public class Pickup : MonoBehaviour
             {
                 GameManager.Instance.ToggleQuestionMark(true);
             }
-            else if (_hoveringOver.CompareTag("Torch"))
+            else if (_hoveringOver.CompareTag("Furnace"))
             {
                 GameManager.Instance.ToggleQuestionMark(true);
+            }
+            else if (_hoveringOver.CompareTag("EmberBall"))
+            {
+                GameManager.Instance.TogglePickupIcon(true);
             }
             else
             {
@@ -66,12 +70,25 @@ public class Pickup : MonoBehaviour
             {
                 GameManager.Instance.ShowLockedDoorText();
             }
-            else if (_hoveringOver.CompareTag("Torch"))
+            else if (_hoveringOver.CompareTag("Furnace"))
             {
-                var torch = _hoveringOver.GetComponent<Torch>();
-                if (torch)
+                var furnace = _hoveringOver.GetComponent<Furnace>();
+                if (furnace)
                 {
-                    torch.Interact();
+                    furnace.Interact();
+                }
+            }
+            else if (_hoveringOver.CompareTag("EmberBall"))
+            {
+                var ember = _hoveringOver.GetComponent<EmberBall>();
+                if (ember)
+                {
+                    ember.Collect();
+                    if (_audioSource && _pickupSound)
+                    {
+                        _audioSource.PlayOneShot(_pickupSound);
+                    }
+                    _hoveringOver = null;
                 }
             }
         }

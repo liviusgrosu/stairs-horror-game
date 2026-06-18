@@ -4,11 +4,12 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - Torch
   - Door
+  - EmberBall
   - Pit
   - Stair
   - Enemy
+  - Furnace
   layers:
   - Default
   - TransparentFX
