@@ -3,11 +3,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Drives the in-game settings panel: music/SFX volume sliders, a fullscreen
-/// toggle and a resolution dropdown. Volume values are stored via
-/// <see cref="SoundSettings"/> and applied live by the audio managers.
-/// </summary>
 public class SettingsMenu : MonoBehaviour
 {
     [Header("Audio")]
@@ -21,6 +16,13 @@ public class SettingsMenu : MonoBehaviour
     [SerializeField] private TMP_Dropdown _resolutionDropdown;
 
     private Resolution[] _resolutions;
+
+    private System.Action _onCloseOverride;
+
+    public void SetCloseAction(System.Action onClose)
+    {
+        _onCloseOverride = onClose;
+    }
 
     private void Start()
     {
@@ -118,9 +120,14 @@ public class SettingsMenu : MonoBehaviour
         Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreenMode);
     }
 
-    /// <summary>Hooked to the Resume/Back button. Closes the menu and unpauses.</summary>
     public void Close()
     {
+        if (_onCloseOverride != null)
+        {
+            _onCloseOverride();
+            return;
+        }
+
         if (GameManager.Instance)
         {
             GameManager.Instance.ResumeGame();

@@ -31,6 +31,10 @@ public class GameManager : MonoBehaviour
     public bool HasWon, HasDied;
     public bool IsPaused;
 
+    // Set true by the main menu once the player presses Play. Until then the
+    // Escape pause menu stays disabled so it can't fight the main menu.
+    public bool GameStarted;
+
     [SerializeField] private GameObject _controlsOverlay;
 
     [SerializeField] private CanvasGroup _mineralStatsCanvasGroup;
@@ -56,7 +60,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && !HasWon && !HasDied)
+        if (Input.GetKeyDown(KeyCode.Escape) && GameStarted && !HasWon && !HasDied)
         {
             ToggleControlsOverlay();
         }

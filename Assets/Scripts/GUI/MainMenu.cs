@@ -1,0 +1,176 @@
+using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class MainMenu : MonoBehaviour
+{
+    [Header("Panels")]
+    [SerializeField] private CanvasGroup _mainMenuGroup;
+    [SerializeField] private GameObject _settingsScreen;
+    [SerializeField] private SettingsMenu _settingsMenu;
+    [SerializeField] private TMP_Text _settingsBackLabel;
+    [SerializeField] private GameObject _creditsScreen;
+
+    [Header("Fade")]
+    [SerializeField] private Image _fadeOverlay;
+    [SerializeField] private float _introFadeDuration = 2f;
+    [SerializeField] private float _menuFadeDuration = 1f;
+
+    [Header("Gameplay")]
+    [SerializeField] private GameObject _hudOverlay;
+
+    private bool _gameStarted;
+
+    private void Start()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.InMenu = true;
+            GameManager.Instance.GameStarted = false;
+        }
+
+        if (_hudOverlay) _hudOverlay.SetActive(false);
+        if (_settingsScreen) _settingsScreen.SetActive(false);
+        if (_creditsScreen) _creditsScreen.SetActive(false);
+
+        ShowMainMenu();
+
+        if (_fadeOverlay)
+        {
+            _fadeOverlay.gameObject.SetActive(true);
+            _fadeOverlay.transform.SetAsLastSibling();
+            var c = _fadeOverlay.color;
+            c.a = 1f;
+            _fadeOverlay.color = c;
+            StartCoroutine(FadeImage(_fadeOverlay, 1f, 0f, _introFadeDuration));
+        }
+    }
+
+    private void Update()
+    {
+        if (!_gameStarted)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    private void ShowMainMenu()
+    {
+        if (_settingsScreen) _settingsScreen.SetActive(false);
+        if (_creditsScreen) _creditsScreen.SetActive(false);
+        if (_settingsMenu) _settingsMenu.SetCloseAction(null);
+
+        _mainMenuGroup.gameObject.SetActive(true);
+        _mainMenuGroup.alpha = 1f;
+        _mainMenuGroup.interactable = true;
+        _mainMenuGroup.blocksRaycasts = true;
+        _mainMenuGroup.transform.SetAsLastSibling();
+
+        if (_fadeOverlay) _fadeOverlay.transform.SetAsLastSibling();
+    }
+
+    public void Play()
+    {
+        if (_gameStarted) return;
+        StartCoroutine(PlayRoutine());
+    }
+
+    private IEnumerator PlayRoutine()
+    {
+        _gameStarted = true;
+        _mainMenuGroup.interactable = false;
+        _mainMenuGroup.blocksRaycasts = false;
+
+        float start = _mainMenuGroup.alpha;
+        float t = 0f;
+        while (t < _menuFadeDuration)
+        {
+            t += Time.deltaTime;
+            _mainMenuGroup.alpha = Mathf.Lerp(start, 0f, t / _menuFadeDuration);
+            yield return null;
+        }
+
+        _mainMenuGroup.alpha = 0f;
+        _mainMenuGroup.gameObject.SetActive(false);
+
+        if (_hudOverlay) _hudOverlay.SetActive(true);
+
+        if (_fadeOverlay) _fadeOverlay.transform.SetSiblingIndex(0);
+
+        if (GameManager.Instance)
+        {
+            GameManager.Instance.InMenu = false;
+            GameManager.Instance.GameStarted = true;
+        }
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    public void OpenSettings()
+    {
+        _mainMenuGroup.gameObject.SetActive(false);
+
+        if (_settingsBackLabel) _settingsBackLabel.text = "Back";
+        if (_settingsScreen)
+        {
+            _settingsScreen.SetActive(true);
+            _settingsScreen.transform.SetAsLastSibling();
+        }
+        if (_settingsMenu) _settingsMenu.SetCloseAction(BackFromSettings);
+    }
+
+    private void BackFromSettings()
+    {
+        if (_settingsScreen) _settingsScreen.SetActive(false);
+        if (_settingsMenu) _settingsMenu.SetCloseAction(null);
+        if (_settingsBackLabel) _settingsBackLabel.text = "Resume";
+        ShowMainMenu();
+    }
+
+    public void OpenCredits()
+    {
+        _mainMenuGroup.gameObject.SetActive(false);
+        if (_creditsScreen)
+        {
+            _creditsScreen.SetActive(true);
+            _creditsScreen.transform.SetAsLastSibling();
+        }
+    }
+
+    public void CloseCredits()
+    {
+        if (_creditsScreen) _creditsScreen.SetActive(false);
+        ShowMainMenu();
+    }
+
+    public void Quit()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    private static IEnumerator FadeImage(Image img, float from, float to, float dur)
+    {
+        var c = img.color;
+        c.a = from;
+        img.color = c;
+
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            c.a = Mathf.Lerp(from, to, t / dur);
+            img.color = c;
+            yield return null;
+        }
+
+        c.a = to;
+        img.color = c;
+    }
+}

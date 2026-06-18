@@ -82,6 +82,14 @@ public class PlayerMovement : MonoBehaviour
     {
         _controller = GetComponent<CharacterController>();
         _camera = Camera.main;
+    
+        var camEuler = _camera.transform.localEulerAngles;
+        transform.Rotate(0f, camEuler.y, 0f);
+        var pitch = camEuler.x;
+        if (pitch > 180f) pitch -= 360f;
+        _yRotation = pitch;
+        _camera.transform.localRotation = Quaternion.Euler(_yRotation, 0f, 0f);
+
         _standingHeight = _controller.height;
         _standingCenter = _controller.center;
         _standingCameraHeight = _camera.transform.localPosition.y;
