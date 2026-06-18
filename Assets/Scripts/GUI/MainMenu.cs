@@ -20,6 +20,16 @@ public class MainMenu : MonoBehaviour
     [Header("Gameplay")]
     [SerializeField] private GameObject _hudOverlay;
 
+    [Header("Elevator Intro")]
+    [Tooltip("Mist played while the menu is up (the player is in the elevator).")]
+    [SerializeField] private ParticleSystem[] _elevatorMist;
+    [Tooltip("Mist that takes over once the player presses Play.")]
+    [SerializeField] private ParticleSystem[] _normalMist;
+    [Tooltip("Looping chain SFX heard during the menu.")]
+    [SerializeField] private AudioSource _chainSource;
+    [Tooltip("One-shot metal crash SFX played when the player presses Play.")]
+    [SerializeField] private AudioSource _crashSource;
+
     private bool _gameStarted;
 
     private void Start()
@@ -35,6 +45,7 @@ public class MainMenu : MonoBehaviour
         if (_creditsScreen) _creditsScreen.SetActive(false);
 
         ShowMainMenu();
+        StartElevatorIntro();
 
         if (_fadeOverlay)
         {
@@ -83,6 +94,8 @@ public class MainMenu : MonoBehaviour
         _mainMenuGroup.interactable = false;
         _mainMenuGroup.blocksRaycasts = false;
 
+        EndElevatorIntro();
+
         float start = _mainMenuGroup.alpha;
         float t = 0f;
         while (t < _menuFadeDuration)
@@ -107,6 +120,49 @@ public class MainMenu : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    private void StartElevatorIntro()
+    {
+        if (_elevatorMist != null)
+        {
+            foreach (var ps in _elevatorMist)
+            {
+                if (ps) ps.Play();
+            }
+        }
+
+        if (_normalMist != null)
+        {
+            foreach (var ps in _normalMist)
+            {
+                if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+        }
+
+        if (_chainSource) _chainSource.Play();
+    }
+
+    private void EndElevatorIntro()
+    {
+        if (_chainSource) _chainSource.Stop();
+        if (_crashSource) _crashSource.Play();
+
+        if (_elevatorMist != null)
+        {
+            foreach (var ps in _elevatorMist)
+            {
+                if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+        }
+
+        if (_normalMist != null)
+        {
+            foreach (var ps in _normalMist)
+            {
+                if (ps) ps.Play();
+            }
+        }
     }
 
     public void OpenSettings()
