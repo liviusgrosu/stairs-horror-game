@@ -11,6 +11,9 @@ public class FurnaceManager : MonoBehaviour
     [SerializeField] private GameObject _zombiePrefab;
     [SerializeField] private float _secondFurnaceSpawnDelay = 60f;
 
+    [Header("Statue")]
+    [SerializeField] private Statue _statue;
+
     [Header("Ice Cracks")]
     [SerializeField] private Material _iceMaterial;
     [SerializeField] private float _crackIntensityUnlit = 0.2f;
@@ -48,6 +51,11 @@ public class FurnaceManager : MonoBehaviour
         {
             SetCrackIntensity(_crackIntensityLit);
             SpawnEngagedZombie();
+
+            if (_statue)
+            {
+                _statue.Pray();
+            }
         }
         else if (_usedCount == 2)
         {
