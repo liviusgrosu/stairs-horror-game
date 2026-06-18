@@ -93,7 +93,7 @@ ModelImporter:
       takeName: Armature.001|Attacking
       internalID: 4033360048437110652
       firstFrame: 0
-      lastFrame: 14
+      lastFrame: 29
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -113,14 +113,14 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.4466958
+      - time: 0.37458044
         functionName: EnableDamageCollider
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: d0aa6255276abd7458760c12fa580c3d, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.7270847
+      - time: 0.50112313
         functionName: DisableDamageCollider
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: d0aa6255276abd7458760c12fa580c3d, type: 3}

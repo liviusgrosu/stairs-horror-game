@@ -60,7 +60,7 @@ public class Pickup : MonoBehaviour
             _hoveringOver = null;
         }
 
-        if (Input.GetKeyDown(KeyCode.F) && _hoveringOver)
+        if (Input.GetKeyDown(KeyCode.E) && _hoveringOver)
         {
             if (_hoveringOver.CompareTag("Door"))
             {

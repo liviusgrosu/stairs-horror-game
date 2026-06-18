@@ -9,14 +9,8 @@ public class EnemyAudio : MonoBehaviour
     [SerializeField] private AudioClip _idleSound;
     [SerializeField] private AudioClip _chaseSound;
     [SerializeField] private AudioClip _screamSound;
-    [SerializeField] private AudioClip _takeDamageSound;
-    [SerializeField] private AudioClip _dieSound;
-    [SerializeField] private AudioClip _suspiciousSound;
-    [SerializeField] private AudioClip _investigateSound;
-    [SerializeField] private AudioClip _calmDownSound;
 
     [Header("Scream")]
-    [Tooltip("Spatial blend the one-shot source drops to while the scream plays, so it carries farther (0 = fully 2D/global, 1 = fully 3D)")]
     [Range(0f, 1f)]
     [SerializeField] private float _screamSpatialBlend = 0.2f;
 
@@ -72,8 +66,6 @@ public class EnemyAudio : MonoBehaviour
 
         if (_screamSound)
         {
-            // Temporarily make the scream more 2D so it's heard from farther away,
-            // then restore the source's normal 3D blend once it finishes.
             if (_restoreSpatialBlendRoutine != null)
             {
                 StopCoroutine(_restoreSpatialBlendRoutine);

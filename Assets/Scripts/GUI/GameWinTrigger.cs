@@ -22,6 +22,12 @@ public class GameWinTrigger : MonoBehaviour
 
     private IEnumerator StartWinScreen()
     {
+        // The win screen is disabled by default so its full-screen panel doesn't
+        // overlap and block other UI (e.g. the settings menu). Enable it now that
+        // the player has reached the win condition. blackScreen ("Background") is a
+        // direct child of the "Game Win Screen" root, so its parent is that root.
+        blackScreen.transform.parent.gameObject.SetActive(true);
+
         yield return FadeGraphic(blackScreen, 0f, 1f, fadeTime);
 
         GameManager.Instance.WinGame();

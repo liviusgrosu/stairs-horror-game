@@ -206,6 +206,12 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    // Hooked to the settings panel's Resume/Back button.
+    public void ResumeGame()
+    {
+        CloseAllMenus();
+    }
+
     private void CloseAllMenus()
     {
         IsPaused = false;

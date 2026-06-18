@@ -65,10 +65,17 @@ public class MusicManager : MonoBehaviour
             _currentBlend = Mathf.MoveTowards(_currentBlend, 0f, _releaseFadeSpeed * Time.deltaTime);
         }
 
-        if (_chaseSource) _chaseSource.volume = _currentBlend;
-        if (_ambientSource) _ambientSource.volume = 1f - _currentBlend;
+        float musicVolume = SoundSettings.MusicVolume;
+        if (_chaseSource) _chaseSource.volume = _currentBlend * musicVolume;
+        if (_ambientSource) _ambientSource.volume = (1f - _currentBlend) * musicVolume;
 
         _blendRequested = false;
         _requestedBlend = 0f;
+    }
+
+    // Lets the SFX volume manager skip the music tracks so they aren't double-scaled.
+    public bool IsMusicSource(AudioSource source)
+    {
+        return source != null && (source == _ambientSource || source == _chaseSource);
     }
 }
