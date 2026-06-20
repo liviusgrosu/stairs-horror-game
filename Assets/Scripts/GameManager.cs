@@ -347,6 +347,8 @@ public class GameManager : MonoBehaviour
     public void WinGame()
     {
         HasWon = true;
+        // Free the cursor so the win screen's Quit button is clickable.
+        ToggleCursorLock(true);
         StartCoroutine(FadeOutAllAudio());
     }
 
