@@ -19,6 +19,16 @@ public class FurnaceManager : MonoBehaviour
     [SerializeField] private float _crackIntensityUnlit = 0.2f;
     [SerializeField] private float _crackIntensityLit = 1f;
 
+    [Header("Guidance")]
+    [Tooltip("Guide object attached to the player, disabled until it's needed.")]
+    [SerializeField] private FurnaceGuide _furnaceGuide;
+    [Tooltip("How long the player can go without lighting a furnace before the guide first appears.")]
+    [SerializeField] private float _guideDelay = 180f;
+    [Tooltip("How often the guide reappears after the first time, while a furnace is still unlit.")]
+    [SerializeField] private float _guideRepeatInterval = 300f;
+    [Tooltip("Skip the guide if the player is already this close to the nearest unlit furnace.")]
+    [SerializeField] private float _guideSkipDistance = 30f;
+
     private static readonly int CrackIntensityID = Shader.PropertyToID("_CrackIntensity");
 
     private int _usedCount;
@@ -33,6 +43,64 @@ public class FurnaceManager : MonoBehaviour
         Instance = this;
 
         SetCrackIntensity(_crackIntensityUnlit);
+    }
+
+    private void Start()
+    {
+        StartCoroutine(GuideRoutine());
+    }
+
+    private IEnumerator GuideRoutine()
+    {
+        // Don't start counting until the player is actually playing (past the menu).
+        while (GameManager.Instance == null || !GameManager.Instance.GameStarted)
+        {
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(_guideDelay);
+
+        while (true)
+        {
+            SpawnGuide();
+            yield return new WaitForSeconds(_guideRepeatInterval);
+        }
+    }
+
+    private void SpawnGuide()
+    {
+        if (!_furnaceGuide) return;
+
+        var player = GameObject.Find("Player");
+        if (!player) return;
+
+        Furnace target = FindNearestUnlitFurnace(player.transform.position);
+        if (!target) return;
+
+        float distance = Vector3.Distance(player.transform.position, target.transform.position);
+        if (distance <= _guideSkipDistance) return;
+
+        _furnaceGuide.Activate(player.transform, target.transform);
+    }
+
+    private static Furnace FindNearestUnlitFurnace(Vector3 from)
+    {
+        Furnace nearest = null;
+        float best = float.MaxValue;
+
+        foreach (var furnace in FindObjectsByType<Furnace>(FindObjectsSortMode.None))
+        {
+            if (furnace.Used) continue;
+
+            float distance = (furnace.transform.position - from).sqrMagnitude;
+            if (distance < best)
+            {
+                best = distance;
+                nearest = furnace;
+            }
+        }
+
+        return nearest;
     }
 
     private void SetCrackIntensity(float value)

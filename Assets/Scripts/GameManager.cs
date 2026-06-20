@@ -22,7 +22,7 @@ public class GameManager : MonoBehaviour
     private bool triggeredFirstChase, triggeredSecondChase;
 
     [SerializeField]
-    private TextMeshProUGUI _entranceDoorText, _normalRockHoverText, _mineralDepositHoverText, _blockageRockHoverText, _usedFurnaceText, _lockedDoorText, _needFurnaceItemText;
+    private TextMeshProUGUI _entranceDoorText, _normalRockHoverText, _mineralDepositHoverText, _blockageRockHoverText, _usedFurnaceText, _lockedDoorText, _needFurnaceItemText, _pickupTutorialText;
     private bool DisplayingHoverText;
     private Coroutine _hoverTextCoroutine;
 
@@ -341,6 +341,18 @@ public class GameManager : MonoBehaviour
         DisplayingHoverText = true;
         if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
         _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_lockedDoorText));
+    }
+
+    public void ShowPickupTutorialText()
+    {
+        if (DisplayingHoverText || !_pickupTutorialText)
+        {
+            return;
+        }
+
+        DisplayingHoverText = true;
+        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
+        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_pickupTutorialText));
     }
 
     private IEnumerator FadeTextInAndOut(TextMeshProUGUI text)

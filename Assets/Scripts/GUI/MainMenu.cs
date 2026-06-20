@@ -20,6 +20,10 @@ public class MainMenu : MonoBehaviour
     [Header("Gameplay")]
     [SerializeField] private GameObject _hudOverlay;
 
+    [Header("Debug")]
+    [Tooltip("Skip the menu and start the game immediately when entering play mode.")]
+    [SerializeField] private bool _skipMenu;
+
     [Header("Elevator Intro")]
     [Tooltip("Mist played while the menu is up (the player is in the elevator).")]
     [SerializeField] private ParticleSystem[] _elevatorMist;
@@ -29,6 +33,8 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private AudioSource _chainSource;
     [Tooltip("One-shot metal crash SFX played when the player presses Play.")]
     [SerializeField] private AudioSource _crashSource;
+    [Tooltip("Camera jolt played when the player presses Play (elevator stopping).")]
+    [SerializeField] private SimpleShake _elevatorStopShake;
 
     private bool _gameStarted;
 
@@ -55,6 +61,11 @@ public class MainMenu : MonoBehaviour
             c.a = 1f;
             _fadeOverlay.color = c;
             StartCoroutine(FadeImage(_fadeOverlay, 1f, 0f, _introFadeDuration));
+        }
+
+        if (_skipMenu)
+        {
+            Play();
         }
     }
 
@@ -147,6 +158,7 @@ public class MainMenu : MonoBehaviour
     {
         if (_chainSource) _chainSource.Stop();
         if (_crashSource) _crashSource.Play();
+        if (_elevatorStopShake) _elevatorStopShake.Shake();
 
         if (_elevatorMist != null)
         {

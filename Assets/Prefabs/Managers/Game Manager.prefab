@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 480581107252287436}
   - component: {fileID: 10946590621211186}
-  - component: {fileID: 1952167961294130224}
   - component: {fileID: 4920196908026058123}
   - component: {fileID: 2803624515126935185}
+  - component: {fileID: 1952167961294130224}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Untagged
@@ -59,13 +59,52 @@ MonoBehaviour:
   _usedFurnaceText: {fileID: 0}
   _lockedDoorText: {fileID: 0}
   _needFurnaceItemText: {fileID: 0}
+  _pickupTutorialText: {fileID: 0}
   HasWon: 0
   HasDied: 0
   IsPaused: 0
+  GameStarted: 0
   _controlsOverlay: {fileID: 0}
   _mineralStatsCanvasGroup: {fileID: 0}
   _deathPostProcessVolume: {fileID: 0}
   _blackScreen: {fileID: 0}
+--- !u!114 &4920196908026058123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993526741983432931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55a6f83f8a5a90b42944f78e79bb7647, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FirstEncounter
+  enableSpawning: 0
+  player: {fileID: 0}
+  distance: 60
+  verticalHalfLength: 40
+  gridSnap: {x: 8, y: 4, z: 4}
+  rayColor: {r: 1, g: 0, b: 0, a: 1}
+  zombieHangingPrefab: {fileID: 6687914815078315992, guid: 0e4d4a13b87d50d489fb1638d1ffc37c, type: 3}
+  stairsTag: Stair
+  spawnDelay: 3
+  zombiePrefab: {fileID: 7296180442736720642, guid: 1cba28f7c1af69b41ad3c53006aae765, type: 3}
+  recurringSpawnInterval: 5
+  recurringCommitDistance: 30
+  recurringAbandonDistance: 60
+--- !u!114 &2803624515126935185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993526741983432931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b9c829c4ceb82b41a5bf12b6f4fad6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SfxVolumeManager
 --- !u!82 &1952167961294130224
 AudioSource:
   m_ObjectHideFlags: 0
@@ -163,40 +202,3 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &4920196908026058123
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993526741983432931}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55a6f83f8a5a90b42944f78e79bb7647, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FirstEncounter
-  enableSpawning: 1
-  player: {fileID: 0}
-  distance: 60
-  verticalHalfLength: 40
-  gridSnap: {x: 8, y: 4, z: 4}
-  rayColor: {r: 1, g: 0, b: 0, a: 1}
-  zombieHangingPrefab: {fileID: 6687914815078315992, guid: 0e4d4a13b87d50d489fb1638d1ffc37c, type: 3}
-  stairsTag: Stair
-  spawnDelay: 3
-  zombiePrefab: {fileID: 7296180442736720642, guid: 1cba28f7c1af69b41ad3c53006aae765, type: 3}
-  recurringSpawnInterval: 5
-  recurringCommitDistance: 30
-  recurringAbandonDistance: 60
---- !u!114 &2803624515126935185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993526741983432931}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b9c829c4ceb82b41a5bf12b6f4fad6a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SfxVolumeManager
