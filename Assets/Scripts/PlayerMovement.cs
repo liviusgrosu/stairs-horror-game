@@ -10,6 +10,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private float gravity = -18f;
 
+    [Header("Fall Damage")]
+    [SerializeField]
+    private float fallDamageVelocityThreshold = -15f;
+    [SerializeField]
+    private int fallDamageAmount = 20;
+    private bool _wasGrounded;
+
     // Crouching
     [Header("Crouching")]
     [SerializeField] private float crouchSpeedMultiplier = 0.5f;
@@ -73,6 +80,13 @@ public class PlayerMovement : MonoBehaviour
     private float _yRotation;
     [SerializeField]
     private float mouseSensitivity = 100f;
+
+    [Header("Sliding")]
+    [SerializeField] private float slideAcceleration = 25f;
+    [SerializeField] private float maxSlideSpeed = 12f;
+    [SerializeField] private float slideStopSmooth = 12f;
+    [SerializeField] private LayerMask groundMask = ~0;
+    private Vector3 _slideVelocity;
 
     [Header("-DEBUG-")]
     [SerializeField]
@@ -215,7 +229,20 @@ public class PlayerMovement : MonoBehaviour
         var horizontal = Input.GetAxisRaw("Horizontal");
         var vertical = Input.GetAxisRaw("Vertical");
 
-        if (_controller.isGrounded && _yVelocity < 0)
+        // Detect the landing frame and read the impact speed before it's reset below.
+        if (_controller.isGrounded && !_wasGrounded)
+        {
+            if (_yVelocity <= fallDamageVelocityThreshold && PlayerHealth.Instance)
+            {
+                PlayerHealth.Instance.TakeFallDamage(fallDamageAmount);
+            }
+        }
+        _wasGrounded = _controller.isGrounded;
+
+        var onSteepSlope = OnSteepSlope(out var slideDirection);
+
+        // Don't pin to the ground while sliding, otherwise gravity-along-slope is killed.
+        if (_controller.isGrounded && _yVelocity < 0 && !onSteepSlope)
         {
             _yVelocity = -2f;
         }
@@ -245,8 +272,41 @@ public class PlayerMovement : MonoBehaviour
         }
 
         _yVelocity += gravity * Time.deltaTime;
-        var velocity = movementDir + Vector3.up * _yVelocity;
+
+        if (onSteepSlope)
+        {
+            // Accelerate down the slope, faster on steeper ground.
+            _slideVelocity += slideDirection * (slideAcceleration * Time.deltaTime);
+            _slideVelocity = Vector3.ClampMagnitude(_slideVelocity, maxSlideSpeed);
+        }
+        else
+        {
+            _slideVelocity = Vector3.Lerp(_slideVelocity, Vector3.zero, slideStopSmooth * Time.deltaTime);
+        }
+
+        var velocity = movementDir + _slideVelocity + Vector3.up * _yVelocity;
         _controller.Move(velocity * Time.deltaTime);
+    }
+
+    private bool OnSteepSlope(out Vector3 slideDirection)
+    {
+        slideDirection = Vector3.zero;
+        if (!_controller.isGrounded) return false;
+
+        var origin = transform.position + _controller.center;
+        var castDistance = (_controller.height / 2f) - _controller.radius + 0.3f;
+
+        if (Physics.SphereCast(origin, _controller.radius, Vector3.down, out var hit,
+                castDistance, groundMask, QueryTriggerInteraction.Ignore))
+        {
+            var angle = Vector3.Angle(hit.normal, Vector3.up);
+            if (angle > _controller.slopeLimit)
+            {
+                slideDirection = Vector3.ProjectOnPlane(Vector3.down, hit.normal).normalized;
+                return true;
+            }
+        }
+        return false;
     }
 
     private void HandleCrouch()
