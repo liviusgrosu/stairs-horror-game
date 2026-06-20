@@ -20,7 +20,6 @@ public class FirstEncounter : MonoBehaviour
 
     [Header("Recurring Spawn")]
     [SerializeField] private GameObject zombiePrefab;
-    [SerializeField] private float recurringSpawnInterval = 120f;
     [Tooltip("When the player comes within this range of a dormant recurring zombie, the rest of the wave despawns. Set larger than the enemy's engage distance so the player can move around a found zombie without waking it.")]
     [SerializeField] private float recurringCommitDistance = 20f;
     [Tooltip("If the player leaves a still-dormant recurring zombie farther than this, it despawns (freeing the next wave to spawn). Set larger than the commit distance.")]
@@ -33,6 +32,12 @@ public class FirstEncounter : MonoBehaviour
     private bool _hasSpawned;
     private bool _hasCommitted;
     private bool _recurringCommitted;
+
+    private bool _firstEncounterArmed;
+    private bool _recurringActive;
+    private float _recurringInterval;
+    private bool _recurringEngaged;
+    private float _recurringTimer;
 
     private void Awake()
     {
@@ -66,13 +71,18 @@ public class FirstEncounter : MonoBehaviour
             Debug.DrawLine(point + up, point - up, rayColor);
         }
 
-        if (!_hasSpawned)
+        if (_firstEncounterArmed && !_hasSpawned)
         {
             _timer += Time.deltaTime;
             if (_timer >= spawnDelay)
             {
                 SpawnEncounters(playerPos, up);
             }
+        }
+
+        if (_recurringActive)
+        {
+            TickRecurring();
         }
 
         if (_recurringWave.Count > 0)
@@ -82,6 +92,33 @@ public class FirstEncounter : MonoBehaviour
             else
                 TryAbandonRecurringWave(playerPos);
         }
+    }
+
+    public void ArmFirstEncounter()
+    {
+        _firstEncounterArmed = true;
+    }
+
+    public void StartRecurringSpawns(float interval, bool engaged)
+    {
+        _recurringActive = true;
+        _recurringInterval = Mathf.Max(0.01f, interval);
+        _recurringEngaged = engaged;
+        _recurringTimer = 0f;
+    }
+
+    private void TickRecurring()
+    {
+        _recurringTimer += Time.deltaTime;
+        if (_recurringTimer < _recurringInterval) return;
+        _recurringTimer = 0f;
+
+        if (!zombiePrefab || IsZombieActive()) return;
+
+        if (_recurringEngaged)
+            SpawnAtRandomStair(zombiePrefab, true);
+        else
+            SpawnRecurringWave();
     }
 
     private void SpawnEncounters(Vector3 playerPos, Vector3 up)
@@ -155,27 +192,6 @@ public class FirstEncounter : MonoBehaviour
             if (!enc) continue;
             enc.PlayerEntered -= OnEncounterEntered;
             if (enc != entered) Destroy(enc.gameObject);
-        }
-
-        entered.BodyDropped += OnBodyDropped;
-    }
-
-    private void OnBodyDropped(BodyEncounter dropped)
-    {
-        dropped.BodyDropped -= OnBodyDropped;
-        StartCoroutine(RecurringSpawnLoop());
-    }
-
-    private IEnumerator RecurringSpawnLoop()
-    {
-        var wait = new WaitForSeconds(recurringSpawnInterval);
-        while (true)
-        {
-            yield return wait;
-
-            if (!zombiePrefab || IsZombieActive()) continue;
-
-            SpawnRecurringWave();
         }
     }
 

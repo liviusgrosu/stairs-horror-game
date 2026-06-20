@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMovement
   _walkSpeed: 2
-  _runSpeed: 5
+  _runSpeed: 2.5
   _angularSpeed: 500
   _stayInPlace: 0
 --- !u!114 &8307861582946751201
@@ -212,11 +212,7 @@ MonoBehaviour:
   _idleSound: {fileID: 8300000, guid: e94eb9f70a4a7e746a460a00b6dc0f87, type: 3}
   _chaseSound: {fileID: 8300000, guid: 625028761cf5dda4d8ead1cae47d5e4e, type: 3}
   _screamSound: {fileID: 8300000, guid: d2bca81b8c3b493438aefc585d489c9d, type: 3}
-  _takeDamageSound: {fileID: 0}
-  _dieSound: {fileID: 0}
-  _suspiciousSound: {fileID: 0}
-  _investigateSound: {fileID: 0}
-  _calmDownSound: {fileID: 0}
+  _screamSpatialBlend: 0.2
   _shutUpPlease: 0
 --- !u!82 &8307861582946751400
 AudioSource:

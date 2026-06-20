@@ -212,7 +212,6 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
-    // Hooked to the settings panel's Resume/Back button.
     public void ResumeGame()
     {
         CloseAllMenus();
@@ -238,54 +237,6 @@ public class GameManager : MonoBehaviour
         Cursor.visible = state;
     }
     
-    public void ShowEntranceDoorText()
-    {
-        if (DisplayingHoverText)
-        {
-            return;
-        }
-
-        DisplayingHoverText = true;
-        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
-        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_entranceDoorText));
-    }
-    
-    public void ShowBlockageRockText()
-    {
-        if (DisplayingHoverText)
-        {
-            return;
-        }
-
-        DisplayingHoverText = true;
-        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
-        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_blockageRockHoverText));
-    }
-
-    public void ShowNormalRockHoverText()
-    {
-        if (DisplayingHoverText)
-        {
-            return;
-        }
-
-        DisplayingHoverText = true;
-        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
-        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_normalRockHoverText));
-    }
-    
-    public void ShowMineralDepositHoverText()
-    {
-        if (DisplayingHoverText)
-        {
-            return;
-        }
-
-        DisplayingHoverText = true;
-        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
-        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_mineralDepositHoverText));
-    }
-
     public void ShowUsedFurnaceText()
     {
         if (DisplayingHoverText || !_usedFurnaceText)
@@ -310,8 +261,6 @@ public class GameManager : MonoBehaviour
         _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_needFurnaceItemText));
     }
 
-    // --- Ember ball inventory ---
-
     public int EmberBallsHeld => _emberBallsHeld;
 
     public void AddEmberBall()
@@ -319,7 +268,6 @@ public class GameManager : MonoBehaviour
         _emberBallsHeld++;
     }
 
-    // Consumes one ember ball if any are held. Returns false when the player has none.
     public bool TryUseEmberBall()
     {
         if (_emberBallsHeld <= 0)

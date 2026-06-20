@@ -6,18 +6,27 @@ public class FurnaceManager : MonoBehaviour
     public static FurnaceManager Instance;
 
     [SerializeField] private GameObject _door;
-    [SerializeField] private int _requiredFurnaces = 2;
+    [SerializeField] private int _requiredFurnaces = 3;
     [Header("Furnace Spawns")]
     [SerializeField] private GameObject _zombiePrefab;
+    [Tooltip("After the 2nd furnace, how long before the first engaged chase begins.")]
     [SerializeField] private float _secondFurnaceSpawnDelay = 60f;
+    [Tooltip("Between the 2nd and 3rd furnace, how often a dormant (non-engaged) zombie can spawn.")]
+    [SerializeField] private float _nonEngagedRecurringInterval = 90f;
+    [Tooltip("After the 3rd furnace, how often a zombie spawns already engaged (chasing).")]
+    [SerializeField] private float _engagedRecurringInterval = 60f;
 
     [Header("Statue")]
     [SerializeField] private Statue _statue;
 
     [Header("Ice Cracks")]
     [SerializeField] private Material _iceMaterial;
+    [Tooltip("Crack intensity before any furnace is lit.")]
     [SerializeField] private float _crackIntensityUnlit = 0.2f;
-    [SerializeField] private float _crackIntensityLit = 1f;
+    [Tooltip("Crack intensity after the 1st furnace is lit.")]
+    [SerializeField] private float _firstCrackIntensity = 0.5f;
+    [Tooltip("Crack intensity after the 2nd furnace is lit. The 3rd furnace deactivates the door, so this is the last crack state the player sees.")]
+    [SerializeField] private float _secondCrackIntensity = 0.75f;
 
     [Header("Guidance")]
     [Tooltip("Guide object attached to the player, disabled until it's needed.")]
@@ -117,8 +126,12 @@ public class FurnaceManager : MonoBehaviour
 
         if (_usedCount == 1)
         {
-            SetCrackIntensity(_crackIntensityLit);
-            SpawnEngagedZombie();
+            SetCrackIntensity(_firstCrackIntensity);
+
+            if (FirstEncounter.Instance)
+            {
+                FirstEncounter.Instance.ArmFirstEncounter();
+            }
 
             if (_statue)
             {
@@ -127,7 +140,21 @@ public class FurnaceManager : MonoBehaviour
         }
         else if (_usedCount == 2)
         {
+            SetCrackIntensity(_secondCrackIntensity);
+
             StartCoroutine(SpawnEngagedZombieDelayed(_secondFurnaceSpawnDelay));
+            if (FirstEncounter.Instance)
+            {
+                FirstEncounter.Instance.StartRecurringSpawns(_nonEngagedRecurringInterval, false);
+            }
+        }
+        else if (_usedCount == 3)
+        {
+            SpawnEngagedZombie();
+            if (FirstEncounter.Instance)
+            {
+                FirstEncounter.Instance.StartRecurringSpawns(_engagedRecurringInterval, true);
+            }
         }
 
         if (_usedCount >= _requiredFurnaces && _door)
