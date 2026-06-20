@@ -50,6 +50,11 @@ public class PlayerHealth : MonoBehaviour
     
     private void Start()
     {
+        if (DebugManager.IsUnlimitedHealth)
+        {
+            MaxHealth = DebugManager.UnlimitedHealthAmount;
+        }
+
         _currentHealth = MaxHealth;
         UpdateVignette();
         UpdateHealthStatus();

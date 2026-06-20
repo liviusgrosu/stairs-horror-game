@@ -6,9 +6,6 @@ public class FirstEncounter : MonoBehaviour
 {
     public static FirstEncounter Instance;
 
-    [Tooltip("Master switch. When off, no encounters or recurring zombies spawn at all.")]
-    [SerializeField] private bool enableSpawning = true;
-
     [SerializeField] private Transform player;
     [SerializeField] private float distance = 40f;
     [SerializeField] private float verticalHalfLength = 20f;
@@ -60,7 +57,7 @@ public class FirstEncounter : MonoBehaviour
 
     private void Update()
     {
-        if (!enableSpawning) return;
+        if (!DebugManager.SpawningEnabled) return;
         if (!player) return;
 
         Vector3 playerPos = player.position;
@@ -162,7 +159,7 @@ public class FirstEncounter : MonoBehaviour
 
     public void SpawnAtRandomStair(GameObject prefab, bool startEngaged)
     {
-        if (!enableSpawning || !prefab || !player) return;
+        if (!DebugManager.SpawningEnabled || !prefab || !player) return;
 
         Vector3 up = Vector3.up * verticalHalfLength;
         List<GameObject> stairs = FindStairs(player.position, up);

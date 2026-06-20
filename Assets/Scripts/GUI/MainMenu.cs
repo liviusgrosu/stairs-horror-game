@@ -20,10 +20,6 @@ public class MainMenu : MonoBehaviour
     [Header("Gameplay")]
     [SerializeField] private GameObject _hudOverlay;
 
-    [Header("Debug")]
-    [Tooltip("Skip the menu and start the game immediately when entering play mode.")]
-    [SerializeField] private bool _skipMenu;
-
     [Header("Elevator Intro")]
     [Tooltip("Mist played while the menu is up (the player is in the elevator).")]
     [SerializeField] private ParticleSystem[] _elevatorMist;
@@ -63,7 +59,7 @@ public class MainMenu : MonoBehaviour
             StartCoroutine(FadeImage(_fadeOverlay, 1f, 0f, _introFadeDuration));
         }
 
-        if (_skipMenu)
+        if (DebugManager.ShouldSkipMenu)
         {
             Play();
         }

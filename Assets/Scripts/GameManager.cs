@@ -68,6 +68,11 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
+        if (DebugManager.ShouldStartWithEmbers)
+        {
+            _emberBallsHeld = DebugManager.StartingEmberCount;
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 

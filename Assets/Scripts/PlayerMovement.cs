@@ -88,10 +88,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask groundMask = ~0;
     private Vector3 _slideVelocity;
 
-    [Header("-DEBUG-")]
-    [SerializeField]
-    private bool unlimitedSprint;
-
     void Start()
     {
         _controller = GetComponent<CharacterController>();
@@ -260,8 +256,9 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
+            var speedMult = DebugManager.IsFasterMovement ? DebugManager.FasterMovementMultiplier : 1f;
             var targetSpeed = _isCrouching ? movementSpeed * crouchSpeedMultiplier :
-                          _isSprinting ? movementSpeed * sprintMultiplier : movementSpeed;
+                          _isSprinting ? movementSpeed * sprintMultiplier * speedMult : movementSpeed * speedMult;
             _currentSpeed = Mathf.SmoothDamp(_currentSpeed, targetSpeed, ref _speedSmoothVelocity, speedSmoothTime);
         }
         movementDir = movementDir.normalized * _currentSpeed;
@@ -387,7 +384,7 @@ public class PlayerMovement : MonoBehaviour
             _isSprinting = true;
             _sprintTimer += Time.deltaTime;
             
-            if (unlimitedSprint)
+            if (DebugManager.IsUnlimitedSprint)
             {
                 return;
             }
