@@ -60,6 +60,14 @@ public class PlayerHealth : MonoBehaviour
         UpdateHealthStatus();
     }
 
+    private void Update()
+    {
+        if (DebugManager.IsKillKeyEnabled && Input.GetKeyDown(KeyCode.F))
+        {
+            TakeDamage(_currentHealth);
+        }
+    }
+
     public void TakeDamage(int amount)
     {
         if (_currentHealth <= 0)

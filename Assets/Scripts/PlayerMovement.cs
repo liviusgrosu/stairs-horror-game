@@ -202,8 +202,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void Look()
     {
-        var mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * mouseSensitivity;
-        var mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * mouseSensitivity;
+        var isDead = GameManager.Instance && GameManager.Instance.HasDied;
+        var mouseY = isDead ? 0f : Input.GetAxisRaw("Mouse Y") * Time.deltaTime * mouseSensitivity;
+        var mouseX = isDead ? 0f : Input.GetAxisRaw("Mouse X") * Time.deltaTime * mouseSensitivity;
 
         _yRotation -= mouseY;
         _yRotation = Mathf.Clamp(_yRotation, -80f, 80f);
@@ -225,7 +226,6 @@ public class PlayerMovement : MonoBehaviour
         var horizontal = Input.GetAxisRaw("Horizontal");
         var vertical = Input.GetAxisRaw("Vertical");
 
-        // Detect the landing frame and read the impact speed before it's reset below.
         if (_controller.isGrounded && !_wasGrounded)
         {
             if (_yVelocity <= fallDamageVelocityThreshold && PlayerHealth.Instance)

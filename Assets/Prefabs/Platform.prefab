@@ -22,11 +22,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b02822858d91968439de415e767916c8, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.70711935
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b02822858d91968439de415e767916c8, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.00000023841855
+      value: -0.70709425
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b02822858d91968439de415e767916c8, type: 3}
       propertyPath: m_LocalRotation.y
@@ -38,7 +38,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b02822858d91968439de415e767916c8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b02822858d91968439de415e767916c8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
@@ -66,14 +66,14 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b02822858d91968439de415e767916c8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6670492280231497079}
+      addedObject: {fileID: 4986750721117967761}
   m_SourcePrefab: {fileID: 100100000, guid: b02822858d91968439de415e767916c8, type: 3}
 --- !u!1 &6676685799159965486 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b02822858d91968439de415e767916c8, type: 3}
   m_PrefabInstance: {fileID: 5794219080363678335}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &6670492280231497079
+--- !u!65 &4986750721117967761
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -92,5 +92,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 2, z: 2}
-  m_Center: {x: 0, y: 0, z: 1}
+  m_Size: {x: 2, y: 2, z: 7}
+  m_Center: {x: 0, y: 0, z: -3.5}

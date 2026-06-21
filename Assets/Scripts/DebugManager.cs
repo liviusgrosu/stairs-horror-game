@@ -19,6 +19,8 @@ public class DebugManager : MonoBehaviour
     [SerializeField] private bool _unlimitedHealth;
     [Tooltip("Start with all 3 ember balls already in the inventory.")]
     [SerializeField] private bool _startWithEmbers;
+    [Tooltip("Press F to instantly kill the player.")]
+    [SerializeField] private bool _enableKillKey;
 
     public const float FasterMovementMultiplier = 3f;
     public const int UnlimitedHealthAmount = 1000000;
@@ -30,6 +32,7 @@ public class DebugManager : MonoBehaviour
     public bool FasterMovement => _fasterMovement;
     public bool UnlimitedHealth => _unlimitedHealth;
     public bool StartWithEmbers => _startWithEmbers;
+    public bool EnableKillKey => _enableKillKey;
 
     public static bool SpawningEnabled => Instance == null || Instance._enableSpawning;
     public static bool IsUnlimitedSprint => Instance != null && Instance._unlimitedSprint;
@@ -37,6 +40,7 @@ public class DebugManager : MonoBehaviour
     public static bool ShouldSkipMenu => Instance != null && Instance._skipMenu;
     public static bool IsUnlimitedHealth => Instance != null && Instance._unlimitedHealth;
     public static bool ShouldStartWithEmbers => Instance != null && Instance._startWithEmbers;
+    public static bool IsKillKeyEnabled => Instance != null && Instance._enableKillKey;
 
     private void Awake()
     {

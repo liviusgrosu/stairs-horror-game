@@ -46,6 +46,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private Volume _deathPostProcessVolume;
     [SerializeField] private Image _blackScreen;
+    [SerializeField] private float _deathFadeDuration = 2f;
 
     private void Awake()
     {
@@ -168,31 +169,53 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator DeathBlurRoutine()
     {
-        if (_deathPostProcessVolume == null) yield break;
+        if (_deathPostProcessVolume != null && _deathPostProcessVolume.profile.TryGet(out DepthOfField dof))
+        {
+            _deathPostProcessVolume.gameObject.SetActive(true);
 
-        if (!_deathPostProcessVolume.profile.TryGet(out DepthOfField dof))
-            yield break;
+            const float startFocusDistance = 5f;
+            const float blurDuration = 1f;
 
-        _deathPostProcessVolume.gameObject.SetActive(true);
+            dof.active = true;
+            dof.mode.Override(DepthOfFieldMode.Bokeh);
+            dof.focusDistance.Override(startFocusDistance);
 
-        const float startFocusDistance = 5f;
-        const float blurDuration = 1f;
+            float elapsed = 0f;
 
-        dof.active = true;
-        dof.mode.Override(DepthOfFieldMode.Bokeh);
-        dof.focusDistance.Override(startFocusDistance);
+            while (elapsed < blurDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / blurDuration;
+                dof.focusDistance.Override(Mathf.Lerp(startFocusDistance, 0f, t));
+                yield return null;
+            }
 
-        float elapsed = 0f;
+            dof.focusDistance.Override(0f);
+        }
 
-        while (elapsed < blurDuration)
+        yield return FadeInDeathOverlay();
+    }
+
+    private IEnumerator FadeInDeathOverlay()
+    {
+        if (_blackScreen == null) yield break;
+
+        _blackScreen.gameObject.SetActive(true);
+        _blackScreen.transform.SetAsLastSibling();
+        if (GameOverScreen != null) GameOverScreen.transform.SetAsLastSibling();
+
+        var color = _blackScreen.color;
+        var elapsed = 0f;
+        while (elapsed < _deathFadeDuration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / blurDuration;
-            dof.focusDistance.Override(Mathf.Lerp(startFocusDistance, 0f, t));
+            color.a = Mathf.Lerp(0f, 1f, elapsed / _deathFadeDuration);
+            _blackScreen.color = color;
             yield return null;
         }
 
-        dof.focusDistance.Override(0f);
+        color.a = 1f;
+        _blackScreen.color = color;
     }
 
     public void ToggleControlsOverlay()
