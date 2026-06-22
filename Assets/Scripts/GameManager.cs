@@ -246,6 +246,7 @@ public class GameManager : MonoBehaviour
 
         ToggleCursorLock(true);
         Time.timeScale = 0f;
+        SetBreathingPaused(true);
     }
 
     public void ResumeGame()
@@ -265,6 +266,23 @@ public class GameManager : MonoBehaviour
 
         ToggleCursorLock(false);
         Time.timeScale = 1f;
+        SetBreathingPaused(false);
+    }
+
+    private void SetBreathingPaused(bool paused)
+    {
+        var playerMovement = FindFirstObjectByType<PlayerMovement>();
+        if (playerMovement)
+        {
+            if (paused) playerMovement.PauseBreathing();
+            else playerMovement.ResumeBreathing();
+        }
+
+        foreach (var enemyAudio in FindObjectsByType<EnemyAudio>(FindObjectsSortMode.None))
+        {
+            if (paused) enemyAudio.PauseLoop();
+            else enemyAudio.ResumeLoop();
+        }
     }
 
     private void ToggleCursorLock(bool state)
@@ -388,6 +406,7 @@ public class GameManager : MonoBehaviour
         HasWon = true;
         // Free the cursor so the win screen's Quit button is clickable.
         ToggleCursorLock(true);
+        SetBreathingPaused(true);
         StartCoroutine(FadeOutAllAudio());
     }
 

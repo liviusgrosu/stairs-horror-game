@@ -335,6 +335,22 @@ public class PlayerMovement : MonoBehaviour
         _camera.transform.localPosition = cameraPos;
     }
 
+    public void PauseBreathing()
+    {
+        if (_breathingAudioSource && _breathingAudioSource.isPlaying)
+        {
+            _breathingAudioSource.Pause();
+        }
+    }
+
+    public void ResumeBreathing()
+    {
+        if (_breathingAudioSource)
+        {
+            _breathingAudioSource.UnPause();
+        }
+    }
+
     private void HandleBreathingAudio()
     {
         if (_isOnCooldown)

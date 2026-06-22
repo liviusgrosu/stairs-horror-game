@@ -84,6 +84,24 @@ public class EnemyAudio : MonoBehaviour
         _restoreSpatialBlendRoutine = null;
     }
     
+    // Pause/resume the looping breathing/idle/chase sound while the game is
+    // paused or won (AudioSource playback ignores Time.timeScale).
+    public void PauseLoop()
+    {
+        if (_loopAudioSource && _loopAudioSource.isPlaying)
+        {
+            _loopAudioSource.Pause();
+        }
+    }
+
+    public void ResumeLoop()
+    {
+        if (_loopAudioSource)
+        {
+            _loopAudioSource.UnPause();
+        }
+    }
+
     public void StopLoop()
     {
         if (_loopAudioSource)
