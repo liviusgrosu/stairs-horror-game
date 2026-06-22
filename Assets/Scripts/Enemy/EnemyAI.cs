@@ -12,6 +12,7 @@ public class EnemyAI : MonoBehaviour
     public enum State
     {
         Idle,
+        Screaming,
         GettingUp,
         Move,
         Attack
@@ -27,6 +28,8 @@ public class EnemyAI : MonoBehaviour
     [Header("Chase Music")]
     [Tooltip("At/within this distance the chase music is at full volume (no ambient)")]
     [SerializeField] private float _chaseMusicNearDistance = 10f;
+    [Tooltip("Seconds for the chase music to gradually fade in when first engaged, before distance takes over")]
+    [SerializeField] private float _chaseMusicFadeInDuration = 2f;
 
     [Header("Attack State")]
     [SerializeField] private float _toPlayerRotateAttackSpeed = 500f;
@@ -36,6 +39,7 @@ public class EnemyAI : MonoBehaviour
     private State _currentState = State.Idle;
     private bool _pendingStartEngage;
     private bool _despawnArmed = true;
+    private float _chaseMusicFadeTimer;
     private EnemyPerception _perception;
     private EnemyMovement _movement;
     private EnemyCombat _combat;
@@ -88,7 +92,7 @@ public class EnemyAI : MonoBehaviour
         animator.SetTrigger(GetUpTrigger);
         _audio.PlayScream();
         _audio.StopLoop();
-        _currentState = State.GettingUp;
+        _currentState = State.Screaming;
     }
 
     public void Activate()
@@ -130,6 +134,7 @@ public class EnemyAI : MonoBehaviour
         {
             _pendingStartEngage = false;
             _despawnArmed = false;
+            _chaseMusicFadeTimer = 0f;
             animator.Play("Move", 0, 0f);
             _audio.PlayChaseLoop();
             _movement.RunTo(_perception.Player.position);
@@ -138,6 +143,9 @@ public class EnemyAI : MonoBehaviour
 
         switch (_currentState)
         {
+            case State.Screaming:
+                ScreamingState();
+                break;
             case State.GettingUp:
                 GettingUpState();
                 break;
@@ -148,6 +156,16 @@ public class EnemyAI : MonoBehaviour
                 AttackState();
                 break;
         }
+    }
+
+    private void ScreamingState()
+    {
+        var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        if (!stateInfo.IsName("Getting Up")) return;
+
+        // Scream finished: the chase music starts fading in as the enemy gets up.
+        _chaseMusicFadeTimer = 0f;
+        _currentState = State.GettingUp;
     }
 
     private void GettingUpState()
@@ -217,13 +235,23 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // While engaged, crossfade the music proportionally to how close this enemy is to the player.
     private void ReportChaseMusic()
     {
-        if (_currentState is State.Idle or State.GettingUp) return;
+        if (_currentState is State.Idle or State.Screaming) return;
         if (!MusicManager.Instance || _perception == null || !_perception.Player) return;
 
-        float blend = Mathf.InverseLerp(_perception.MaxEngageDistance, _chaseMusicNearDistance, GetDistanceFromPlayer);
+        float blend;
+        if (_chaseMusicFadeTimer < _chaseMusicFadeInDuration)
+        {
+            _chaseMusicFadeTimer += Time.deltaTime;
+            blend = _chaseMusicFadeInDuration > 0f
+                ? Mathf.Clamp01(_chaseMusicFadeTimer / _chaseMusicFadeInDuration)
+                : 1f;
+        }
+        else
+        {
+            blend = Mathf.InverseLerp(_perception.MaxEngageDistance, _chaseMusicNearDistance, GetDistanceFromPlayer);
+        }
         MusicManager.Instance.ReportChaseBlend(blend);
     }
 }
