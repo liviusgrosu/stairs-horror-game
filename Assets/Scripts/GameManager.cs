@@ -35,6 +35,14 @@ public class GameManager : MonoBehaviour
     // Escape pause menu stays disabled so it can't fight the main menu.
     public bool GameStarted;
 
+    [Header("Locked Door Messages")]
+    [Tooltip("Shown when interacting with the door before any furnace is lit.")]
+    [SerializeField, TextArea] private string _doorSolidMessage = "This ice feels really solid";
+    [Tooltip("Shown when interacting with the door after the 1st furnace is lit.")]
+    [SerializeField, TextArea] private string _doorCracksMessage = "I'm starting to see cracks";
+    [Tooltip("Shown when interacting with the door after the 2nd furnace is lit.")]
+    [SerializeField, TextArea] private string _doorBreakingMessage = "It's almost about to break";
+
     [SerializeField] private GameObject _controlsOverlay;
 
     [SerializeField] private CanvasGroup _mineralStatsCanvasGroup;
@@ -313,6 +321,14 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
+
+        int furnacesLit = FurnaceManager.Instance ? FurnaceManager.Instance.UsedFurnaceCount : 0;
+        _lockedDoorText.text = furnacesLit switch
+        {
+            0 => _doorSolidMessage,
+            1 => _doorCracksMessage,
+            _ => _doorBreakingMessage,
+        };
 
         DisplayingHoverText = true;
         if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);

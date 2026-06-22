@@ -42,6 +42,8 @@ public class FurnaceManager : MonoBehaviour
 
     private int _usedCount;
 
+    public int UsedFurnaceCount => _usedCount;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

@@ -113,7 +113,7 @@ Material:
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _CrackGroove: 1
-    - _CrackIntensity: 0.5
+    - _CrackIntensity: 0.2
     - _CrackScale: 0.5
     - _CrackWidth: 0.1
     - _Cracks: 1

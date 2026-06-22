@@ -7395,7 +7395,7 @@ MonoBehaviour:
   _firstCrackIntensity: 0.5
   _secondCrackIntensity: 0.75
   _furnaceGuide: {fileID: 1438242745}
-  _guideDelay: 30
+  _guideDelay: 5
   _guideRepeatInterval: 300
   _guideSkipDistance: 30
 --- !u!4 &273212596
@@ -12048,7 +12048,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1481481973879407214, guid: 037aee52e8b26ef4a847ce81b0daa24a, type: 3}
       propertyPath: _debugActivate
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4681921078031256477, guid: 037aee52e8b26ef4a847ce81b0daa24a, type: 3}
       propertyPath: m_LocalScale.x
