@@ -25,8 +25,6 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float _startEngagedArmDistance = 10f;
 
     [Header("Chase Music")]
-    [Tooltip("At/beyond this distance the chase music is silent (full ambient)")]
-    [SerializeField] private float _chaseMusicFarDistance = 40f;
     [Tooltip("At/within this distance the chase music is at full volume (no ambient)")]
     [SerializeField] private float _chaseMusicNearDistance = 10f;
 
@@ -103,16 +101,12 @@ public class EnemyAI : MonoBehaviour
         _startEngaged = value;
     }
 
-    // True while the enemy is still dormant (spawned non-engaged and not yet disturbed).
     public bool IsIdle => _currentState == State.Idle;
 
-    // Wakes a dormant enemy so it gets up and chases the player.
     public void Engage()
     {
         if (!Toggle) return;
         if (_currentState != State.Idle) return;
-        // Engaged deliberately (e.g. by a furnace) possibly from far away: don't despawn-on-distance
-        // until it has closed in on the player first.
         _despawnArmed = false;
         WakeUp();
     }
@@ -229,7 +223,7 @@ public class EnemyAI : MonoBehaviour
         if (_currentState is State.Idle or State.GettingUp) return;
         if (!MusicManager.Instance || _perception == null || !_perception.Player) return;
 
-        float blend = Mathf.InverseLerp(_chaseMusicFarDistance, _chaseMusicNearDistance, GetDistanceFromPlayer);
+        float blend = Mathf.InverseLerp(_perception.MaxEngageDistance, _chaseMusicNearDistance, GetDistanceFromPlayer);
         MusicManager.Instance.ReportChaseBlend(blend);
     }
 }

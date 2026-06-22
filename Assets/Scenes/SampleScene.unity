@@ -7392,7 +7392,7 @@ MonoBehaviour:
   _firstCrackIntensity: 0.5
   _secondCrackIntensity: 0.75
   _furnaceGuide: {fileID: 1438242745}
-  _guideDelay: 5
+  _guideDelay: 300
   _guideRepeatInterval: 300
   _guideSkipDistance: 30
 --- !u!4 &273212596
@@ -18657,7 +18657,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 660806758623791151, guid: e93683bfe9a2a66418ac2849d47d03fd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 23.64
+      value: 68.64
       objectReference: {fileID: 0}
     - target: {fileID: 660806758623791151, guid: e93683bfe9a2a66418ac2849d47d03fd, type: 3}
       propertyPath: m_LocalPosition.y
@@ -31756,7 +31756,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.45490196}
+  m_Color: {r: 0.78431374, g: 0.11372549, b: 0.2, a: 0.78039217}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -39147,13 +39147,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83d92888d5f074b4f81c7a04e7141c83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugManager
-  _skipMenu: 0
+  _skipMenu: 1
   _enableSpawning: 0
   _deactivateDoor: 0
   _door: {fileID: 2128857356}
-  _unlimitedSprint: 0
+  _unlimitedSprint: 1
   _fasterMovement: 0
-  _unlimitedHealth: 0
+  _unlimitedHealth: 1
   _startWithEmbers: 0
   _enableKillKey: 0
 --- !u!4 &1465968091
