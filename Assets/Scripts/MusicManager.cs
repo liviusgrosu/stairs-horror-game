@@ -15,6 +15,10 @@ public class MusicManager : MonoBehaviour
     private bool _blendRequested;
     private float _currentBlend;
 
+    private float _winFade = 1f;
+    private float _winFadeSpeed;
+    private bool _winFading;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -53,6 +57,12 @@ public class MusicManager : MonoBehaviour
         _blendRequested = true;
     }
 
+    public void FadeOutForWin(float duration)
+    {
+        _winFading = true;
+        _winFadeSpeed = duration > 0f ? 1f / duration : float.PositiveInfinity;
+    }
+
     private void LateUpdate()
     {
         if (_blendRequested)
@@ -65,7 +75,12 @@ public class MusicManager : MonoBehaviour
             _currentBlend = Mathf.MoveTowards(_currentBlend, 0f, _releaseFadeSpeed * Time.deltaTime);
         }
 
-        float musicVolume = SoundSettings.MusicVolume;
+        if (_winFading)
+        {
+            _winFade = Mathf.MoveTowards(_winFade, 0f, _winFadeSpeed * Time.deltaTime);
+        }
+
+        float musicVolume = SoundSettings.MusicVolume * _winFade;
         if (_chaseSource) _chaseSource.volume = _currentBlend * musicVolume;
         if (_ambientSource) _ambientSource.volume = (1f - _currentBlend) * musicVolume;
 

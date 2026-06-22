@@ -413,6 +413,9 @@ public class GameManager : MonoBehaviour
     private IEnumerator FadeOutAllAudio()
     {
         const float fadeDuration = 3f;
+
+        if (MusicManager.Instance) MusicManager.Instance.FadeOutForWin(fadeDuration);
+
         var audioSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
         var startVolumes = new float[audioSources.Length];
 
@@ -429,10 +432,9 @@ public class GameManager : MonoBehaviour
 
             for (int i = 0; i < audioSources.Length; i++)
             {
-                if (audioSources[i] != null)
-                {
-                    audioSources[i].volume = Mathf.Lerp(startVolumes[i], 0f, t);
-                }
+                if (audioSources[i] == null) continue;
+                if (MusicManager.Instance && MusicManager.Instance.IsMusicSource(audioSources[i])) continue;
+                audioSources[i].volume = Mathf.Lerp(startVolumes[i], 0f, t);
             }
 
             yield return null;
@@ -440,11 +442,10 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < audioSources.Length; i++)
         {
-            if (audioSources[i] != null)
-            {
-                audioSources[i].volume = 0f;
-                audioSources[i].Stop();
-            }
+            if (audioSources[i] == null) continue;
+            if (MusicManager.Instance && MusicManager.Instance.IsMusicSource(audioSources[i])) continue;
+            audioSources[i].volume = 0f;
+            audioSources[i].Stop();
         }
     }
 }

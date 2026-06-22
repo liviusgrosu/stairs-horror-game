@@ -38,6 +38,7 @@ public class EnemyAI : MonoBehaviour
 
     private State _currentState = State.Idle;
     private bool _pendingStartEngage;
+    private bool _winStopped;
     private bool _despawnArmed = true;
     private float _chaseMusicFadeTimer;
     private EnemyPerception _perception;
@@ -126,6 +127,12 @@ public class EnemyAI : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance && GameManager.Instance.HasWon)
+        {
+            if (!_winStopped) StopForWin();
+            return;
+        }
+
         ReportChaseMusic();
 
         if (!Toggle) return;
@@ -163,7 +170,6 @@ public class EnemyAI : MonoBehaviour
         var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
         if (!stateInfo.IsName("Getting Up")) return;
 
-        // Scream finished: the chase music starts fading in as the enemy gets up.
         _chaseMusicFadeTimer = 0f;
         _currentState = State.GettingUp;
     }
@@ -233,6 +239,15 @@ public class EnemyAI : MonoBehaviour
             animator.SetBool(IsAttacking, true);
             animator.Play("Attack", 0, 0f);
         }
+    }
+
+    private void StopForWin()
+    {
+        _winStopped = true;
+        _combat.EndAttack();
+        animator.SetBool(IsAttacking, false);
+        _movement.HardStop();
+        animator.speed = 0f;
     }
 
     private void ReportChaseMusic()

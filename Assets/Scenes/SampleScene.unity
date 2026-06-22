@@ -18600,11 +18600,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 660806758623791151, guid: e93683bfe9a2a66418ac2849d47d03fd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 68.64
+      value: 142.77
       objectReference: {fileID: 0}
     - target: {fileID: 660806758623791151, guid: e93683bfe9a2a66418ac2849d47d03fd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 22.28
+      value: 51.78
       objectReference: {fileID: 0}
     - target: {fileID: 660806758623791151, guid: e93683bfe9a2a66418ac2849d47d03fd, type: 3}
       propertyPath: m_LocalPosition.z
@@ -28764,19 +28764,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 567019072896233825, guid: 1cba28f7c1af69b41ad3c53006aae765, type: 3}
       propertyPath: _startEngaged
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5337528934332354940, guid: 1cba28f7c1af69b41ad3c53006aae765, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 42.30829
+      value: 127.36
       objectReference: {fileID: 0}
     - target: {fileID: 5337528934332354940, guid: 1cba28f7c1af69b41ad3c53006aae765, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 18.69206
+      value: 40.583
       objectReference: {fileID: 0}
     - target: {fileID: 5337528934332354940, guid: 1cba28f7c1af69b41ad3c53006aae765, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 218.21825
+      value: 212.25
       objectReference: {fileID: 0}
     - target: {fileID: 5337528934332354940, guid: 1cba28f7c1af69b41ad3c53006aae765, type: 3}
       propertyPath: m_LocalRotation.w
@@ -39033,7 +39033,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DebugManager
   _skipMenu: 1
   _enableSpawning: 0
-  _deactivateDoor: 0
+  _deactivateDoor: 1
   _door: {fileID: 2128857356}
   _unlimitedSprint: 1
   _fasterMovement: 0
