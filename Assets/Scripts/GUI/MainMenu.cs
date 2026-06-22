@@ -31,17 +31,28 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private AudioSource _crashSource;
     [Tooltip("Camera jolt played when the player presses Play (elevator stopping).")]
     [SerializeField] private SimpleShake _elevatorStopShake;
+    [Tooltip("Sparks that burst when the elevator slams to a stop (player presses Play).")]
+    [SerializeField] private ParticleSystem[] _stopSparks;
 
     [Tooltip("The shared 'Moving Chain' material; its texture offset is scrolled while the menu is up. Shared so every chain using it animates together.")]
     [SerializeField] private Material _chainMaterial;
     [Tooltip("How fast the chain texture scrolls (offset.x units per second).")]
     [SerializeField] private float _chainScrollSpeed = 0.5f;
-    [Tooltip("How long the chain takes to lerp to a stop when Play is pressed (the elevator halting).")]
+    [Tooltip("How long the chain and gears take to lerp to a stop when Play is pressed (the elevator halting).")]
     [SerializeField] private float _chainStopDuration = 0.35f;
+
+    [Tooltip("Gears that spin one way (negative Z) during the menu.")]
+    [SerializeField] private Transform[] _gearsClockwise;
+    [Tooltip("Degrees per second for the clockwise gears.")]
+    [SerializeField] private float _gearsClockwiseSpeed = 60f;
+    [Tooltip("Gears that spin the other way (positive Z) during the menu.")]
+    [SerializeField] private Transform[] _gearsCounterClockwise;
+    [Tooltip("Degrees per second for the counter-clockwise gears.")]
+    [SerializeField] private float _gearsCounterClockwiseSpeed = 60f;
 
     private bool _gameStarted;
     private Vector2 _chainStartOffset;
-    private float _chainSpeed;
+    private float _motionScale = 1f;
 
     private void Start()
     {
@@ -52,7 +63,6 @@ public class MainMenu : MonoBehaviour
         }
 
         if (_chainMaterial) _chainStartOffset = _chainMaterial.mainTextureOffset;
-        _chainSpeed = _chainScrollSpeed;
 
         if (_hudOverlay) _hudOverlay.SetActive(false);
         if (_settingsScreen) _settingsScreen.SetActive(false);
@@ -90,11 +100,27 @@ public class MainMenu : MonoBehaviour
             Cursor.visible = true;
         }
 
-        if (_chainMaterial && _chainSpeed != 0f)
+        if (_motionScale <= 0f) return;
+
+        if (_chainMaterial)
         {
             Vector2 offset = _chainMaterial.mainTextureOffset;
-            offset.x += _chainSpeed * Time.deltaTime;
+            offset.x += _chainScrollSpeed * _motionScale * Time.deltaTime;
             _chainMaterial.mainTextureOffset = offset;
+        }
+
+        RotateGears(_gearsClockwise, -_gearsClockwiseSpeed);
+        RotateGears(_gearsCounterClockwise, _gearsCounterClockwiseSpeed);
+    }
+
+    private void RotateGears(Transform[] gears, float speed)
+    {
+        if (gears == null) return;
+
+        float delta = speed * _motionScale * Time.deltaTime;
+        foreach (var gear in gears)
+        {
+            if (gear) gear.Rotate(0f, 0f, delta, Space.Self);
         }
     }
 
@@ -126,7 +152,7 @@ public class MainMenu : MonoBehaviour
         _mainMenuGroup.blocksRaycasts = false;
 
         EndElevatorIntro();
-        StartCoroutine(StopChain());
+        StartCoroutine(StopMotion());
 
         float start = _mainMenuGroup.alpha;
         float t = 0f;
@@ -154,13 +180,13 @@ public class MainMenu : MonoBehaviour
         Cursor.visible = false;
     }
 
-    private IEnumerator StopChain()
+    private IEnumerator StopMotion()
     {
-        float start = _chainSpeed;
+        float start = _motionScale;
 
         if (_chainStopDuration <= 0f)
         {
-            _chainSpeed = 0f;
+            _motionScale = 0f;
             yield break;
         }
 
@@ -169,12 +195,13 @@ public class MainMenu : MonoBehaviour
         {
             t += Time.deltaTime;
             float k = Mathf.Clamp01(t / _chainStopDuration);
+            // Sharp ease-out: most of the speed bleeds off immediately, then settles.
             float eased = 1f - (1f - k) * (1f - k) * (1f - k);
-            _chainSpeed = Mathf.Lerp(start, 0f, eased);
+            _motionScale = Mathf.Lerp(start, 0f, eased);
             yield return null;
         }
 
-        _chainSpeed = 0f;
+        _motionScale = 0f;
     }
 
     private void StartElevatorIntro()
@@ -203,6 +230,14 @@ public class MainMenu : MonoBehaviour
         if (_chainSource) _chainSource.Stop();
         if (_crashSource) _crashSource.Play();
         if (_elevatorStopShake) _elevatorStopShake.Shake();
+
+        if (_stopSparks != null)
+        {
+            foreach (var sparks in _stopSparks)
+            {
+                if (sparks) sparks.Play();
+            }
+        }
 
         if (_elevatorMist != null)
         {
