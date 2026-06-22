@@ -76,6 +76,7 @@ MonoBehaviour:
   _rayGrowDuration: 2
   _riseAudioSource: {fileID: 3114722347515355484}
   _riseStartSound: {fileID: 8300000, guid: 492dcec2e94a65540b972485631116a8, type: 3}
+  _debugActivate: 0
 --- !u!82 &3114722347515355484
 AudioSource:
   m_ObjectHideFlags: 0
@@ -98,9 +99,9 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 5
+  MaxDistance: 50
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -133,7 +134,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

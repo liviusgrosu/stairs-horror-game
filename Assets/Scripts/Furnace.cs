@@ -18,6 +18,10 @@ public class Furnace : MonoBehaviour
 
     private static readonly int LightTrigger = Animator.StringToHash("Light Furnace");
 
+    [Header("Debug")]
+    [Tooltip("Start the furnace already activated on play, without needing an ember ball.")]
+    [SerializeField] private bool _debugActivate;
+
     private bool _used;
     public bool Used => _used;
 
@@ -26,6 +30,14 @@ public class Furnace : MonoBehaviour
         if (!_animator)
         {
             _animator = GetComponent<Animator>();
+        }
+    }
+
+    private void Start()
+    {
+        if (_debugActivate)
+        {
+            Activate();
         }
     }
 
@@ -40,14 +52,19 @@ public class Furnace : MonoBehaviour
             return;
         }
 
-        // Needs an ember ball to light. Without one, prompt the player and bail.
         if (GameManager.Instance && !GameManager.Instance.TryUseEmberBall())
         {
             GameManager.Instance.ShowNeedFurnaceItemText();
             return;
         }
 
-        // Mark used immediately so the furnace can't be re-triggered mid-animation.
+        Activate();
+    }
+
+    private void Activate()
+    {
+        if (_used) return;
+
         _used = true;
 
         if (_animator)
@@ -60,7 +77,6 @@ public class Furnace : MonoBehaviour
         }
         else
         {
-            // No animator wired up; light it right away.
             OnFurnaceLit();
         }
     }
@@ -69,16 +85,13 @@ public class Furnace : MonoBehaviour
     {
         _animator.SetTrigger(LightTrigger);
 
-        // Let the animator react to the trigger this frame.
         yield return null;
 
-        // Wait out the transition into the light state.
         while (_animator.IsInTransition(0))
         {
             yield return null;
         }
 
-        // Wait for the light clip to finish playing.
         while (_animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
         {
             yield return null;
@@ -87,7 +100,6 @@ public class Furnace : MonoBehaviour
         OnFurnaceLit();
     }
 
-    // Runs once the light animation has finished.
     public void OnFurnaceLit()
     {
         if (_ray)

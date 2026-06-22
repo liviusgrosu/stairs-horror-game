@@ -12046,6 +12046,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furnace (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1481481973879407214, guid: 037aee52e8b26ef4a847ce81b0daa24a, type: 3}
+      propertyPath: _debugActivate
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4681921078031256477, guid: 037aee52e8b26ef4a847ce81b0daa24a, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -12097,6 +12101,10 @@ PrefabInstance:
     - target: {fileID: 4681921078031256477, guid: 037aee52e8b26ef4a847ce81b0daa24a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6838290499257676664, guid: 037aee52e8b26ef4a847ce81b0daa24a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10000
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -39121,7 +39129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DebugManager
   _skipMenu: 0
   _enableSpawning: 0
-  _deactivateDoor: 1
+  _deactivateDoor: 0
   _door: {fileID: 2128857356}
   _unlimitedSprint: 0
   _fasterMovement: 0
