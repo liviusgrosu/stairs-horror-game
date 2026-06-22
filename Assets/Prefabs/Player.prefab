@@ -394,6 +394,7 @@ GameObject:
   - component: {fileID: 6966218622029693005}
   - component: {fileID: 9057437241825533657}
   - component: {fileID: 6456873695781472252}
+  - component: {fileID: 537830020227632959}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -435,6 +436,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   movementSpeed: 10
   gravity: -18
+  fallDamageVelocityThreshold: -15
+  fallDamageAmount: 20
   crouchSpeedMultiplier: 0.5
   crouchHeight: 1
   crouchTransitionSpeed: 8
@@ -456,7 +459,12 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   mouseSensitivity: 100
-  unlimitedSprint: 1
+  slideAcceleration: 25
+  maxSlideSpeed: 12
+  slideStopSmooth: 12
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &4678693609887437966
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -583,6 +591,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: f9fed22262d8974419e994ff58194899, type: 3}
   - {fileID: 8300000, guid: d2a236031d5c4934c9b9b57048967d35, type: 3}
   deathSFX: {fileID: 8300000, guid: ee612d1d1ca3181498708417bcd812cd, type: 3}
+  knuckleCrackSFX: {fileID: 0}
   _healthStatusImage: {fileID: 0}
   _healthStatusText: {fileID: 0}
   _healthy:
@@ -770,6 +779,29 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5
+--- !u!164 &537830020227632959
+AudioReverbFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3865969137971576598}
+  m_Enabled: 1
+  m_DryLevel: 0
+  m_Room: -1000
+  m_RoomHF: -237
+  m_DecayTime: 2.7
+  m_DecayHFRatio: 0.79
+  m_ReflectionsLevel: -1214
+  m_ReverbLevel: 395
+  m_ReverbDelay: 0.02
+  m_Diffusion: 100
+  m_Density: 100
+  m_HFReference: 5000
+  m_RoomLF: 0
+  m_LFReference: 250
+  m_ReflectionsDelay: 0
+  m_ReverbPreset: 14
 --- !u!1 &7095648822939420553
 GameObject:
   m_ObjectHideFlags: 0
@@ -1191,6 +1223,7 @@ MonoBehaviour:
   maxYawOffset: 30
   maxPitchOffset: 15
   recoverySpeed: 3
+  downwardPitchOffset: 25
 --- !u!1001 &145947354290387968
 PrefabInstance:
   m_ObjectHideFlags: 0

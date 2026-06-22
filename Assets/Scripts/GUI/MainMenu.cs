@@ -32,7 +32,16 @@ public class MainMenu : MonoBehaviour
     [Tooltip("Camera jolt played when the player presses Play (elevator stopping).")]
     [SerializeField] private SimpleShake _elevatorStopShake;
 
+    [Tooltip("The shared 'Moving Chain' material; its texture offset is scrolled while the menu is up. Shared so every chain using it animates together.")]
+    [SerializeField] private Material _chainMaterial;
+    [Tooltip("How fast the chain texture scrolls (offset.x units per second).")]
+    [SerializeField] private float _chainScrollSpeed = 0.5f;
+    [Tooltip("How long the chain takes to lerp to a stop when Play is pressed (the elevator halting).")]
+    [SerializeField] private float _chainStopDuration = 0.35f;
+
     private bool _gameStarted;
+    private Vector2 _chainStartOffset;
+    private float _chainSpeed;
 
     private void Start()
     {
@@ -41,6 +50,9 @@ public class MainMenu : MonoBehaviour
             GameManager.Instance.InMenu = true;
             GameManager.Instance.GameStarted = false;
         }
+
+        if (_chainMaterial) _chainStartOffset = _chainMaterial.mainTextureOffset;
+        _chainSpeed = _chainScrollSpeed;
 
         if (_hudOverlay) _hudOverlay.SetActive(false);
         if (_settingsScreen) _settingsScreen.SetActive(false);
@@ -65,12 +77,24 @@ public class MainMenu : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (_chainMaterial) _chainMaterial.mainTextureOffset = _chainStartOffset;
+    }
+
     private void Update()
     {
         if (!_gameStarted)
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+        }
+
+        if (_chainMaterial && _chainSpeed != 0f)
+        {
+            Vector2 offset = _chainMaterial.mainTextureOffset;
+            offset.x += _chainSpeed * Time.deltaTime;
+            _chainMaterial.mainTextureOffset = offset;
         }
     }
 
@@ -102,6 +126,7 @@ public class MainMenu : MonoBehaviour
         _mainMenuGroup.blocksRaycasts = false;
 
         EndElevatorIntro();
+        StartCoroutine(StopChain());
 
         float start = _mainMenuGroup.alpha;
         float t = 0f;
@@ -127,6 +152,29 @@ public class MainMenu : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    private IEnumerator StopChain()
+    {
+        float start = _chainSpeed;
+
+        if (_chainStopDuration <= 0f)
+        {
+            _chainSpeed = 0f;
+            yield break;
+        }
+
+        float t = 0f;
+        while (t < _chainStopDuration)
+        {
+            t += Time.deltaTime;
+            float k = Mathf.Clamp01(t / _chainStopDuration);
+            float eased = 1f - (1f - k) * (1f - k) * (1f - k);
+            _chainSpeed = Mathf.Lerp(start, 0f, eased);
+            yield return null;
+        }
+
+        _chainSpeed = 0f;
     }
 
     private void StartElevatorIntro()
