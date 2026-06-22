@@ -10,6 +10,12 @@ public class DebugManager : MonoBehaviour
     [Tooltip("Master switch for enemy encounters and recurring spawns. Off = no enemies at all.")]
     [SerializeField] private bool _enableSpawning = true;
 
+    [Header("World")]
+    [Tooltip("Deactivate the assigned door on start (e.g. to walk straight through it).")]
+    [SerializeField] private bool _deactivateDoor;
+    [Tooltip("The door GameObject to deactivate when 'Deactivate Door' is enabled.")]
+    [SerializeField] private GameObject _door;
+
     [Header("Player")]
     [Tooltip("Sprint never depletes.")]
     [SerializeField] private bool _unlimitedSprint;
@@ -50,5 +56,13 @@ public class DebugManager : MonoBehaviour
             return;
         }
         Instance = this;
+    }
+
+    private void Start()
+    {
+        if (_deactivateDoor && _door != null)
+        {
+            _door.SetActive(false);
+        }
     }
 }

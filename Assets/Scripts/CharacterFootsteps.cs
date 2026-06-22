@@ -23,8 +23,11 @@ public class CharacterFootsteps : MonoBehaviour
     
     [Header("Metal Footstep Sounds")]
     public AudioClip[] metalSounds;
-    
-    
+
+    [Header("Snow Footstep Sounds")]
+    public AudioClip[] snowSounds;
+
+
     [Header("Speed Sound Multipliers")]
     [SerializeField] private float _walkSpeedMultiplier = 0.5f;
     [SerializeField] private float _sprintSpeedMultiplier = 1.5f;
@@ -46,6 +49,7 @@ public class CharacterFootsteps : MonoBehaviour
     private const string GrassTag = "Grass";
     private const string CarpetTag = "Carpet";
     private const string MetalTag = "Metal";
+    private const string SnowTag = "Snow";
 
     [Header("Noise")]
     [SerializeField] private float _baseNoiseRadius = 8f;
@@ -55,6 +59,7 @@ public class CharacterFootsteps : MonoBehaviour
     [SerializeField] private float _grassNoise = 0.4f;
     [SerializeField] private float _carpetNoise = 0.3f;
     [SerializeField] private float _metalNoise = 0.85f;
+    [SerializeField] private float _snowNoise = 0.35f;
     
     [Header("Speed Frequencies")]
     public float stepInterval = 0.45f;
@@ -72,7 +77,10 @@ public class CharacterFootsteps : MonoBehaviour
     private AudioSource _audioSource;
     private CharacterController _characterController;
     private PlayerMovement _playerMovement;
+    private AudioReverbFilter _reverbFilter;
     private int _ignoreSelfMask;
+
+    private string _currentSurfaceTag = StoneTag;
 
     private float _stepTimer;
     private int _lastClipIndex = -1;
@@ -85,6 +93,7 @@ public class CharacterFootsteps : MonoBehaviour
         _audioSource = GetComponent<AudioSource>();
         _characterController = GetComponent<CharacterController>();
         _playerMovement = GetComponent<PlayerMovement>();
+        _reverbFilter = GetComponent<AudioReverbFilter>();
 
         _audioSource.playOnAwake = false;
         _audioSource.loop = false;
@@ -93,8 +102,25 @@ public class CharacterFootsteps : MonoBehaviour
 
     private void Update()
     {
+        UpdateCurrentSurface();
         HandleLanding();
         HandleFootsteps();
+    }
+
+    private void UpdateCurrentSurface()
+    {
+        _currentSurfaceTag = Physics.Raycast(transform.position, Vector3.down, out var hit, raycastDistance, _ignoreSelfMask)
+            ? hit.collider.tag
+            : StoneTag;
+
+        if (_reverbFilter != null)
+        {
+            var enableReverb = _currentSurfaceTag != SnowTag;
+            if (_reverbFilter.enabled != enableReverb)
+            {
+                _reverbFilter.enabled = enableReverb;
+            }
+        }
     }
 
     private void HandleFootsteps()
@@ -176,34 +202,23 @@ public class CharacterFootsteps : MonoBehaviour
 
     private (float, string) GetSurfaceNoiseLevel()
     {
-        if (!Physics.Raycast(transform.position, Vector3.down, out var hit, raycastDistance, _ignoreSelfMask))
+        switch (_currentSurfaceTag)
         {
-            return (_stoneNoise, StoneTag);
+            case GravelTag:
+                return (_gravelNoise, GravelTag);
+            case WoodTag:
+                return (_woodNoise, WoodTag);
+            case GrassTag:
+                return (_grassNoise, GrassTag);
+            case CarpetTag:
+                return (_carpetNoise, CarpetTag);
+            case MetalTag:
+                return (_metalNoise, MetalTag);
+            case SnowTag:
+                return (_snowNoise, SnowTag);
+            default:
+                return (_stoneNoise, StoneTag);
         }
-
-        var tag = hit.collider.tag;
-
-        if (tag == GravelTag)
-        {
-            return (_gravelNoise, GravelTag);
-        }
-        if (tag == WoodTag)
-        {
-            return (_woodNoise, WoodTag);
-        }
-        if (tag == GrassTag)
-        {
-            return (_grassNoise, GrassTag);
-        }
-        if (tag == CarpetTag)
-        {
-            return (_carpetNoise, CarpetTag);
-        }
-        if (tag == MetalTag)
-        {
-            return (_metalNoise, MetalTag);
-        }
-        return (_stoneNoise, StoneTag);
     }
 
     private void PlayFootstepForSurface()
@@ -228,37 +243,23 @@ public class CharacterFootsteps : MonoBehaviour
 
     private AudioClip[] GetSoundSetForSurface()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, out var hit, raycastDistance, _ignoreSelfMask))
+        switch (_currentSurfaceTag)
         {
-            var tag = hit.collider.tag;
-
-            if (tag == GravelTag)
-            {
+            case GravelTag:
                 return gravelSounds;
-            }
-            if (tag == WoodTag)
-            {
+            case WoodTag:
                 return woodSounds;
-            }
-            if (tag == StoneTag)
-            {
-                return stoneSounds;
-            }
-            if (tag == GrassTag)
-            {
+            case GrassTag:
                 return grassSounds;
-            }
-            if (tag == CarpetTag)
-            {
+            case CarpetTag:
                 return carpetSounds;
-            }
-            if (tag == MetalTag)
-            {
+            case MetalTag:
                 return metalSounds;
-            }
-            return stoneSounds;
+            case SnowTag:
+                return snowSounds;
+            default:
+                return stoneSounds;
         }
-        return stoneSounds;
     }
 
     private void OnDrawGizmos()

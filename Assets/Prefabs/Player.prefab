@@ -518,6 +518,10 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 421783379fd0a2a4c8672e2f6971fa98, type: 3}
   - {fileID: 8300000, guid: d96e44bf4681f2546aba513537094559, type: 3}
   - {fileID: 8300000, guid: d847246f749c60649ba77d5a780bf36f, type: 3}
+  snowSounds:
+  - {fileID: 8300000, guid: 92bcb0802bbaa414997db3fcfbd4511b, type: 3}
+  - {fileID: 8300000, guid: 63c521be4dc737f4ca8950bf2ab6752d, type: 3}
+  - {fileID: 8300000, guid: 9268850030e2cdf4fa9121659db201bb, type: 3}
   _walkSpeedMultiplier: 9
   _sprintSpeedMultiplier: 12
   _crouchSpeedMultiplier: 5
