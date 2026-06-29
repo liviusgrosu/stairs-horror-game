@@ -15,7 +15,7 @@ public class LowResRenderer : MonoBehaviour
     {
         _urpAsset = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
         if (_urpAsset == null)
-        {
+        { 
             Debug.LogWarning("[LowResRenderer] Project is not using URP.");
             return;
         }
@@ -24,7 +24,7 @@ public class LowResRenderer : MonoBehaviour
         _originalFilter = _urpAsset.upscalingFilter;
 
         _urpAsset.renderScale     = _resolutionScale;
-        _urpAsset.upscalingFilter = UpscalingFilterSelection.Point; // nearest-neighbour = PS1 blocky look
+        _urpAsset.upscalingFilter = UpscalingFilterSelection.Point;
     }
 
     private void OnDestroy()
