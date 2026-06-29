@@ -18,6 +18,10 @@ public class Furnace : MonoBehaviour
 
     private static readonly int LightTrigger = Animator.StringToHash("Light Furnace");
 
+    [Header("On Activate")]
+    [SerializeField] private GameObject[] _activate;
+    [SerializeField] private GameObject[] _inactivate;
+
     [Header("Debug")]
     [Tooltip("Start the furnace already activated on play, without needing an ember ball.")]
     [SerializeField] private bool _debugActivate;
@@ -66,6 +70,12 @@ public class Furnace : MonoBehaviour
         if (_used) return;
 
         _used = true;
+
+        foreach (var go in _activate)
+            if (go) go.SetActive(true);
+
+        foreach (var go in _inactivate)
+            if (go) go.SetActive(false);
 
         if (_animator)
         {
