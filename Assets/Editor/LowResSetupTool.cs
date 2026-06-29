@@ -1,102 +1,90 @@
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Rendering.Universal;
+using UnityEditor.SceneManagement;
 
 public static class LowResSetupTool
 {
-    [MenuItem("Tools/Setup Low-Res Renderer")]
-    public static void SetupLowResRenderer()
+    [MenuItem("Tools/Low-Res Renderer/Revert Old Render-Texture Setup")]
+    public static void RevertRenderTextureSetup()
     {
-        // ── 1. Find the Main Camera in the scene ─────────────────────────────
-        Camera gameCamera = Camera.main;
-        if (!gameCamera)
+        bool changed = false;
+
+        // Remove the UI Camera created by the old setup
+        var uiCamGo = GameObject.Find("UI Camera");
+        if (uiCamGo)
         {
-            Debug.LogError("[LowResSetup] No camera tagged 'MainCamera' found in the scene.");
-            return;
+            Undo.DestroyObjectImmediate(uiCamGo);
+            Debug.Log("[LowResSetup] Removed 'UI Camera'.");
+            changed = true;
         }
 
-        // ── 2. Strip UI from the game camera's culling mask ──────────────────
-        int uiLayer = LayerMask.NameToLayer("UI");
-        if (uiLayer >= 0)
-            gameCamera.cullingMask &= ~(1 << uiLayer);
-
-        // ── 3. Create (or reuse) a UI Camera ─────────────────────────────────
-        const string uiCamName = "UI Camera";
-        Camera uiCamera = GameObject.Find(uiCamName)?.GetComponent<Camera>();
-        if (!uiCamera)
+        // Remove the Low Res Controller
+        var controllerGo = GameObject.Find("Low Res Controller");
+        if (controllerGo)
         {
-            var uiCamGo = new GameObject(uiCamName);
-            uiCamera = uiCamGo.AddComponent<Camera>();
+            Undo.DestroyObjectImmediate(controllerGo);
+            Debug.Log("[LowResSetup] Removed 'Low Res Controller'.");
+            changed = true;
         }
 
-        uiCamera.clearFlags    = CameraClearFlags.Depth;
-        uiCamera.cullingMask   = uiLayer >= 0 ? (1 << uiLayer) : 0;
-        uiCamera.depth         = gameCamera.depth + 1;
-        uiCamera.orthographic  = true;
-        uiCamera.targetTexture = null;
-
-        // Position it on top of the game camera (doesn't matter for overlay, but keeps hierarchy tidy)
-        uiCamera.transform.SetPositionAndRotation(gameCamera.transform.position, gameCamera.transform.rotation);
-
-        // ── 4. Find or create a full-screen RawImage on the Canvas ───────────
-        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
-        if (!canvas)
+        // Remove the Low Res Display RawImage from the canvas
+        var canvas = Object.FindFirstObjectByType<Canvas>();
+        if (canvas)
         {
-            Debug.LogError("[LowResSetup] No Canvas found in the scene.");
-            return;
+            var display = canvas.transform.Find("Low Res Display");
+            if (display)
+            {
+                Undo.DestroyObjectImmediate(display.gameObject);
+                Debug.Log("[LowResSetup] Removed 'Low Res Display' RawImage.");
+                changed = true;
+            }
+
+            // Revert canvas to Screen Space Overlay
+            if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            {
+                Undo.RecordObject(canvas, "Revert Canvas render mode");
+                canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+                canvas.worldCamera = null;
+                EditorUtility.SetDirty(canvas);
+                Debug.Log("[LowResSetup] Canvas reverted to Screen Space Overlay.");
+                changed = true;
+            }
         }
 
-        canvas.renderMode  = RenderMode.ScreenSpaceCamera;
-        canvas.worldCamera = uiCamera;
-        canvas.planeDistance = 1f;
-
-        const string rawImageName = "Low Res Display";
-        RawImage rawImage = canvas.transform.Find(rawImageName)?.GetComponent<RawImage>();
-        if (!rawImage)
+        // Restore Main Camera culling mask to include UI
+        var mainCam = Camera.main;
+        if (mainCam)
         {
-            var go = new GameObject(rawImageName);
-            go.transform.SetParent(canvas.transform, false);
+            int uiLayer = LayerMask.NameToLayer("UI");
+            if (uiLayer >= 0)
+            {
+                Undo.RecordObject(mainCam, "Restore Main Camera culling mask");
+                mainCam.cullingMask |= (1 << uiLayer);
+                EditorUtility.SetDirty(mainCam);
+                Debug.Log("[LowResSetup] Restored UI layer to Main Camera culling mask.");
+                changed = true;
+            }
 
-            rawImage = go.AddComponent<RawImage>();
-
-            // Stretch to fill the canvas
-            var rt = go.GetComponent<RectTransform>();
-            rt.anchorMin        = Vector2.zero;
-            rt.anchorMax        = Vector2.one;
-            rt.offsetMin        = Vector2.zero;
-            rt.offsetMax        = Vector2.zero;
-
-            // Put it behind all other UI (sibling index 0)
-            go.transform.SetSiblingIndex(0);
+            // Clear any render texture left on the camera
+            if (mainCam.targetTexture != null)
+            {
+                Undo.RecordObject(mainCam, "Clear camera target texture");
+                mainCam.targetTexture = null;
+                EditorUtility.SetDirty(mainCam);
+                Debug.Log("[LowResSetup] Cleared render texture from Main Camera.");
+                changed = true;
+            }
         }
 
-        // ── 5. Create (or reuse) the LowResRenderer controller ───────────────
-        const string controllerName = "Low Res Controller";
-        var controllerGo = GameObject.Find(controllerName);
-        if (!controllerGo)
-            controllerGo = new GameObject(controllerName);
-
-        var renderer = controllerGo.GetComponent<LowResRenderer>()
-                    ?? controllerGo.AddComponent<LowResRenderer>();
-
-        // Use SerializedObject so the fields actually save properly
-        var so = new SerializedObject(renderer);
-        so.FindProperty("_gameCamera").objectReferenceValue   = gameCamera;
-        so.FindProperty("_displayTarget").objectReferenceValue = rawImage;
-        so.ApplyModifiedProperties();
-
-        // ── 6. Mark scene dirty so Unity knows to save ────────────────────────
-        EditorUtility.SetDirty(canvas);
-        EditorUtility.SetDirty(uiCamera.gameObject);
-        EditorUtility.SetDirty(controllerGo);
-        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
-            UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
-
-        Debug.Log("[LowResSetup] Done! Save the scene and hit Play to see the effect.\n" +
-                  $"  Game camera : {gameCamera.name} (CullingMask UI removed)\n" +
-                  $"  UI camera   : {uiCamera.name}\n" +
-                  $"  RawImage    : {rawImage.name} on Canvas '{canvas.name}'");
-
-        Selection.activeGameObject = controllerGo;
+        if (changed)
+        {
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            Debug.Log("[LowResSetup] Revert complete. Save the scene.");
+        }
+        else
+        {
+            Debug.Log("[LowResSetup] Nothing to revert.");
+        }
     }
 }
