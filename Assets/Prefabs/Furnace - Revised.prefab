@@ -765,6 +765,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -3756473180518285571, guid: ad363651b7f436a4391c9fb2ecc58100, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: -3345904343683596190, guid: ad363651b7f436a4391c9fb2ecc58100, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -788,6 +792,10 @@ PrefabInstance:
     - target: {fileID: -731297382039843073, guid: ad363651b7f436a4391c9fb2ecc58100, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 492440804577196729, guid: ad363651b7f436a4391c9fb2ecc58100, type: 3}
+      propertyPath: m_TagString
+      value: Coal
       objectReference: {fileID: 0}
     - target: {fileID: 850029635234329822, guid: ad363651b7f436a4391c9fb2ecc58100, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -820,6 +828,10 @@ PrefabInstance:
     - target: {fileID: 2352582660827568480, guid: ad363651b7f436a4391c9fb2ecc58100, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2891746525080496957, guid: ad363651b7f436a4391c9fb2ecc58100, type: 3}
+      propertyPath: m_TagString
+      value: Coal
       objectReference: {fileID: 0}
     - target: {fileID: 3309919742077632772, guid: ad363651b7f436a4391c9fb2ecc58100, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

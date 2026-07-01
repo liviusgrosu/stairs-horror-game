@@ -6,8 +6,8 @@ public class CharacterFootsteps : MonoBehaviour
 {
     public static event Action<float> OnFootstepNoise;
 
-    [Header("Gravel Footstep Sounds")]
-    public AudioClip[] gravelSounds;
+    [Header("Coal Footstep Sounds")]
+    public AudioClip[] coalSounds;
 
     [Header("Stone Footstep Sounds")]
     public AudioClip[] stoneSounds;
@@ -43,7 +43,7 @@ public class CharacterFootsteps : MonoBehaviour
 
     public float raycastDistance = 1.5f;
 
-    private const string GravelTag = "Gravel";
+    private const string CoalTag = "Coal";
     private const string StoneTag = "Stone";
     private const string WoodTag = "Wood";
     private const string GrassTag = "Grass";
@@ -53,7 +53,7 @@ public class CharacterFootsteps : MonoBehaviour
 
     [Header("Noise")]
     [SerializeField] private float _baseNoiseRadius = 8f;
-    [SerializeField] private float _gravelNoise = 0.9f;
+    [SerializeField] private float _coalNoise = 0.9f;
     [SerializeField] private float _stoneNoise = 0.5f;
     [SerializeField] private float _woodNoise = 0.65f;
     [SerializeField] private float _grassNoise = 0.4f;
@@ -204,8 +204,8 @@ public class CharacterFootsteps : MonoBehaviour
     {
         switch (_currentSurfaceTag)
         {
-            case GravelTag:
-                return (_gravelNoise, GravelTag);
+            case CoalTag:
+                return (_coalNoise, CoalTag);
             case WoodTag:
                 return (_woodNoise, WoodTag);
             case GrassTag:
@@ -245,8 +245,8 @@ public class CharacterFootsteps : MonoBehaviour
     {
         switch (_currentSurfaceTag)
         {
-            case GravelTag:
-                return gravelSounds;
+            case CoalTag:
+                return coalSounds;
             case WoodTag:
                 return woodSounds;
             case GrassTag:

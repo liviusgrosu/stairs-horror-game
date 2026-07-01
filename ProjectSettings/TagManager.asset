@@ -12,6 +12,7 @@ TagManager:
   - Furnace
   - Metal
   - Snow
+  - Coal
   layers:
   - Default
   - TransparentFX

@@ -495,10 +495,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 425eb51b57987b04eabdf056ef95ce14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerFootsteps
-  gravelSounds:
-  - {fileID: 8300000, guid: a1452b68a864c474e827878864276333, type: 3}
-  - {fileID: 8300000, guid: 5d5c45c8e09aa3942bf3870f4abf63f3, type: 3}
-  - {fileID: 8300000, guid: 078128fb4bc6a5143b16a1bb4b392047, type: 3}
+  coalSounds: []
   stoneSounds:
   - {fileID: 8300000, guid: 0e33f95aa91a9514a89095b30f6402e6, type: 3}
   - {fileID: 8300000, guid: 93591ad7bb4f8ec48b06648283e51932, type: 3}
@@ -530,7 +527,7 @@ MonoBehaviour:
   crouchVolumeMultiplier: 0.4
   raycastDistance: 1.5
   _baseNoiseRadius: 0.8
-  _gravelNoise: 1.35
+  _coalNoise: 0.9
   _stoneNoise: 1.2
   _woodNoise: 1
   _grassNoise: 0.7
