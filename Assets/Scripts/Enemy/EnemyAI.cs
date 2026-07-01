@@ -15,7 +15,10 @@ public class EnemyAI : MonoBehaviour
         Screaming,
         GettingUp,
         Move,
-        Attack
+        Attack,
+        ReturnToHole,
+        LostWait,
+        WalkAway
     }
 
     [Header("General")]
@@ -34,6 +37,18 @@ public class EnemyAI : MonoBehaviour
     [Header("Attack State")]
     [SerializeField] private float _toPlayerRotateAttackSpeed = 500f;
 
+    [Header("Losing The Player")]
+    [Tooltip("While chasing, if the enemy reaches the closest point it can (e.g. the mouth of a furnace the player ducked into) and the player is still farther than this, it gives up.")]
+    [SerializeField] private float _loseDistance = 3f;
+    [Tooltip("How long the reached-but-can't-close condition must hold before the enemy commits to giving up.")]
+    [SerializeField] private float _loseConfirmDuration = 0.5f;
+    [Tooltip("Safety cap on how long the enemy tries to reach the player's last valid spot before giving up where it stands.")]
+    [SerializeField] private float _returnToHoleTimeout = 8f;
+    [Tooltip("How long the enemy lingers at the spot where it lost the player before wandering off.")]
+    [SerializeField] private float _giveUpWaitDuration = 5f;
+    [Tooltip("How far the enemy walks off in a random direction before despawning.")]
+    [SerializeField] private float _walkAwayDistance = 30f;
+
     [SerializeField] private Animator animator;
 
     private State _currentState = State.Idle;
@@ -41,6 +56,12 @@ public class EnemyAI : MonoBehaviour
     private bool _winStopped;
     private bool _despawnArmed = true;
     private float _chaseMusicFadeTimer;
+    private float _loseConfirmTimer;
+    private float _giveUpWaitTimer;
+    private float _returnTimer;
+    private Vector3 _walkAwayStart;
+    private Vector3 _lastValidPlayerPos;
+    private bool _hasLastValidPlayerPos;
     private EnemyPerception _perception;
     private EnemyMovement _movement;
     private EnemyCombat _combat;
@@ -162,6 +183,15 @@ public class EnemyAI : MonoBehaviour
             case State.Attack:
                 AttackState();
                 break;
+            case State.ReturnToHole:
+                ReturnToHoleState();
+                break;
+            case State.LostWait:
+                LostWaitState();
+                break;
+            case State.WalkAway:
+                WalkAwayState();
+                break;
         }
     }
 
@@ -201,6 +231,26 @@ public class EnemyAI : MonoBehaviour
 
         _movement.SetDestination(_perception.Player.position);
 
+        if (_movement.TrySampleNavMesh(_perception.Player.position, out var validPlayerPos))
+        {
+            _lastValidPlayerPos = validPlayerPos;
+            _hasLastValidPlayerPos = true;
+        }
+
+        if (_movement.IsBarelyMoving() && distance > _loseDistance)
+        {
+            _loseConfirmTimer += Time.deltaTime;
+            if (_loseConfirmTimer >= _loseConfirmDuration)
+            {
+                EnterReturnToHole();
+                return;
+            }
+        }
+        else
+        {
+            _loseConfirmTimer = 0f;
+        }
+
         if (distance <= _combat.AttackRange)
         {
             _movement.HardStop();
@@ -209,6 +259,100 @@ public class EnemyAI : MonoBehaviour
             animator.Play("Attack", 0, 0f);
             _currentState = State.Attack;
         }
+    }
+
+    private void EnterReturnToHole()
+    {
+        _loseConfirmTimer = 0f;
+        _returnTimer = 0f;
+        _combat.EndAttack();
+        animator.SetBool(IsAttacking, false);
+
+        if (!_hasLastValidPlayerPos)
+        {
+            EnterLostWait();
+            return;
+        }
+
+        _movement.Resume();
+        _movement.RunTo(_lastValidPlayerPos);
+        _currentState = State.ReturnToHole;
+    }
+
+    private void ReturnToHoleState()
+    {
+        _returnTimer += Time.deltaTime;
+        if (_movement.HasReachedDestination() || _returnTimer >= _returnToHoleTimeout)
+        {
+            EnterLostWait();
+        }
+    }
+
+    private void EnterLostWait()
+    {
+        _loseConfirmTimer = 0f;
+        _giveUpWaitTimer = 0f;
+        _combat.EndAttack();
+        animator.SetBool(IsAttacking, false);
+        _movement.HardStop();
+        _currentState = State.LostWait;
+    }
+
+    private void LostWaitState()
+    {
+        _giveUpWaitTimer += Time.deltaTime;
+        if (_giveUpWaitTimer < _giveUpWaitDuration) return;
+
+        EnterWalkAway();
+    }
+
+    private void EnterWalkAway()
+    {
+        _walkAwayStart = transform.position;
+        _movement.Resume();
+
+        if (_movement.TryGetWalkAwayDestination(_walkAwayDistance, out var destination))
+        {
+            _movement.WalkTo(destination);
+            animator.Play("Move", 0, 0f);
+            _currentState = State.WalkAway;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void WalkAwayState()
+    {
+        if (CanReachPlayer())
+        {
+            Reengage();
+            return;
+        }
+
+        var travelled = Vector3.Distance(transform.position, _walkAwayStart);
+        if (travelled >= _walkAwayDistance || _movement.HasReachedDestination())
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private bool CanReachPlayer()
+    {
+        if (!_perception.Player) return false;
+        if (!_movement.TrySampleNavMesh(_perception.Player.position, out var onMesh)) return false;
+        return _movement.HasCompletePathTo(onMesh);
+    }
+
+    private void Reengage()
+    {
+        _despawnArmed = false;
+        _loseConfirmTimer = 0f;
+        _movement.Resume();
+        animator.Play("Move", 0, 0f);
+        _movement.RunTo(_perception.Player.position);
+        _currentState = State.Move;
     }
 
     private void AttackState()
