@@ -13,6 +13,7 @@ TagManager:
   - Metal
   - Snow
   - Coal
+  - Floor
   layers:
   - Default
   - TransparentFX
