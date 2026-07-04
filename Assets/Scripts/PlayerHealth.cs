@@ -16,6 +16,12 @@ public class PlayerHealth : MonoBehaviour
     public int MaxHealth = 100;
     private int _currentHealth;
 
+    [Header("Regen")]
+    [SerializeField] private float _regenPerSecond = 2f;
+    [SerializeField] private float _regenDelayAfterDamage = 5f;
+    private float _regenBuffer;
+    private float _timeSinceLastDamage;
+
     [SerializeField] private Image _damageVignette;
 
     [Header("Hit Flash")]
@@ -66,6 +72,39 @@ public class PlayerHealth : MonoBehaviour
         {
             TakeDamage(_currentHealth);
         }
+
+        if (DebugManager.IsDamageKeyEnabled && Input.GetKeyDown(KeyCode.P))
+        {
+            TakeDamage(DebugManager.DamageKeyAmount);
+        }
+
+        HandleRegen();
+    }
+
+    private void HandleRegen()
+    {
+        if (_currentHealth <= 0 || _currentHealth >= MaxHealth)
+        {
+            return;
+        }
+
+        _timeSinceLastDamage += Time.deltaTime;
+        if (_timeSinceLastDamage < _regenDelayAfterDamage)
+        {
+            return;
+        }
+
+        _regenBuffer += _regenPerSecond * Time.deltaTime;
+        if (_regenBuffer < 1f)
+        {
+            return;
+        }
+
+        int whole = Mathf.FloorToInt(_regenBuffer);
+        _regenBuffer -= whole;
+        _currentHealth = Mathf.Min(_currentHealth + whole, MaxHealth);
+        UpdateVignette();
+        UpdateHealthStatus();
     }
 
     public void TakeDamage(int amount)
@@ -76,6 +115,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         _currentHealth = Mathf.Max(_currentHealth - amount, 0);
+        _timeSinceLastDamage = 0f;
         Debug.Log($"Player health: {_currentHealth}/{MaxHealth}");
         UpdateVignette();
         UpdateHealthStatus();
@@ -108,6 +148,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         _currentHealth = Mathf.Max(_currentHealth - amount, 0);
+        _timeSinceLastDamage = 0f;
         UpdateVignette();
         UpdateHealthStatus();
 
