@@ -73,6 +73,7 @@ public class CharacterFootsteps : MonoBehaviour
     public bool IsDampened { get; set; }
     public float DampenedSpeedMultiplier { get; set; }
     public float DampenedVolumeMultiplier { get; set; }
+    public bool SuppressReverb { get; set; }
 
     private AudioSource _audioSource;
     private CharacterController _characterController;
@@ -115,7 +116,7 @@ public class CharacterFootsteps : MonoBehaviour
 
         if (_reverbFilter != null)
         {
-            var enableReverb = _currentSurfaceTag != SnowTag;
+            var enableReverb = _currentSurfaceTag != SnowTag && !SuppressReverb;
             if (_reverbFilter.enabled != enableReverb)
             {
                 _reverbFilter.enabled = enableReverb;

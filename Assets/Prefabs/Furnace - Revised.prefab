@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8699193488315270278}
   - component: {fileID: 8194680035765477913}
   - component: {fileID: 8005833560349568302}
+  - component: {fileID: 4580251719045474003}
   m_Layer: 0
   m_Name: Particle Trigger
   m_TagString: Untagged
@@ -68,6 +69,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8c06ff79a47a947804c5ed55d29f6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParticleZoneTrigger
+--- !u!114 &4580251719045474003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5833286165799378736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f88dd67e1a89b01449306f032a914a21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FurnaceReverbTrigger
 --- !u!1001 &2328129252736543700
 PrefabInstance:
   m_ObjectHideFlags: 0
