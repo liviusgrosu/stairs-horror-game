@@ -15,7 +15,7 @@ public class ParticleZoneTrigger : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        foreach (var ps in other.GetComponentsInChildren<ParticleSystem>())
+        foreach (var ps in GetMistParticles(other))
             ps.Stop();
 
         if (_zoneParticles) _zoneParticles.Play();
@@ -25,9 +25,16 @@ public class ParticleZoneTrigger : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        foreach (var ps in other.GetComponentsInChildren<ParticleSystem>())
+        foreach (var ps in GetMistParticles(other))
             ps.Play();
 
         if (_zoneParticles) _zoneParticles.Stop();
+    }
+
+    private ParticleSystem[] GetMistParticles(Collider player)
+    {
+        var mist = player.transform.Find("Normal - Mist");
+        if (!mist) return System.Array.Empty<ParticleSystem>();
+        return mist.GetComponentsInChildren<ParticleSystem>();
     }
 }
