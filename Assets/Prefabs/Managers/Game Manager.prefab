@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4920196908026058123}
   - component: {fileID: 2803624515126935185}
   - component: {fileID: 1952167961294130224}
+  - component: {fileID: 6248976622291353694}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Untagged
@@ -60,14 +61,19 @@ MonoBehaviour:
   _lockedDoorText: {fileID: 0}
   _needFurnaceItemText: {fileID: 0}
   _pickupTutorialText: {fileID: 0}
+  _incorrectFuranceText: {fileID: 0}
   HasWon: 0
   HasDied: 0
   IsPaused: 0
   GameStarted: 0
+  _doorSolidMessage: This ice feels really solid
+  _doorCracksMessage: I'm starting to see cracks
+  _doorBreakingMessage: It's almost about to break
   _controlsOverlay: {fileID: 0}
   _mineralStatsCanvasGroup: {fileID: 0}
   _deathPostProcessVolume: {fileID: 0}
   _blackScreen: {fileID: 0}
+  _deathFadeDuration: 2
 --- !u!114 &4920196908026058123
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -80,7 +86,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55a6f83f8a5a90b42944f78e79bb7647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstEncounter
-  enableSpawning: 0
   player: {fileID: 0}
   distance: 60
   verticalHalfLength: 40
@@ -88,9 +93,8 @@ MonoBehaviour:
   rayColor: {r: 1, g: 0, b: 0, a: 1}
   zombieHangingPrefab: {fileID: 6687914815078315992, guid: 0e4d4a13b87d50d489fb1638d1ffc37c, type: 3}
   stairsTag: Stair
-  spawnDelay: 3
+  spawnDelay: 60
   zombiePrefab: {fileID: 7296180442736720642, guid: 1cba28f7c1af69b41ad3c53006aae765, type: 3}
-  recurringSpawnInterval: 5
   recurringCommitDistance: 30
   recurringAbandonDistance: 60
 --- !u!114 &2803624515126935185
@@ -202,3 +206,16 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6248976622291353694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993526741983432931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 748bca09fa64d1c45a08a90661018646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LowResRenderer
+  _resolutionScale: 0.2

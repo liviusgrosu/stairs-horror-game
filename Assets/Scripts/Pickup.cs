@@ -48,6 +48,10 @@ public class Pickup : MonoBehaviour
             {
                 GameManager.Instance.ToggleQuestionMark(true);
             }
+            else if (_hoveringOver.CompareTag("Incorrect Furnace"))
+            {
+                GameManager.Instance.ToggleQuestionMark(true);
+            }
             else if (_hoveringOver.CompareTag("EmberBall"))
             {
                 GameManager.Instance.TogglePickupIcon(true);
@@ -77,6 +81,10 @@ public class Pickup : MonoBehaviour
                 {
                     furnace.Interact();
                 }
+            }
+            else if (_hoveringOver.CompareTag("Incorrect Furnace"))
+            {
+                GameManager.Instance.ShowIncorrectFurnaceText();
             }
             else if (_hoveringOver.CompareTag("EmberBall"))
             {

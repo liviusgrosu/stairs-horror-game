@@ -275,6 +275,10 @@ Shader "Custom/BumpyIceGlass"
                 // brighten alpha where specular/rim/cracks hit so they read as solid glints
                 alpha = saturate(alpha + spec + fres * 0.15 + crack * 0.5);
 
+                // fade out with camera distance (matches the furnace beam behaviour)
+                float distFade = 1.0 - smoothstep(30.0, 70.0, distance(_WorldSpaceCameraPos.xyz, posWS));
+                alpha *= distFade;
+
                 return half4(lit, alpha);
             }
             ENDHLSL
