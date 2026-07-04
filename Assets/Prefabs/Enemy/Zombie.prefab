@@ -133,7 +133,13 @@ MonoBehaviour:
   _startEngaged: 0
   _startEngagedArmDistance: 20
   _chaseMusicNearDistance: 10
+  _chaseMusicFadeInDuration: 2
   _toPlayerRotateAttackSpeed: 100
+  _loseDistance: 3
+  _loseConfirmDuration: 0.5
+  _returnToHoleTimeout: 8
+  _giveUpWaitDuration: 5
+  _walkAwayDistance: 30
   animator: {fileID: 3213730723778447895}
 --- !u!114 &6536861296087545860
 MonoBehaviour:
@@ -496,6 +502,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 62ca7c717d7de464ba6019da69061c9f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2782971564115846389}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 62ca7c717d7de464ba6019da69061c9f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9014930961551219805}
   m_SourcePrefab: {fileID: 100100000, guid: 62ca7c717d7de464ba6019da69061c9f, type: 3}
 --- !u!4 &2830727204427308811 stripped
 Transform:
@@ -541,3 +550,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0aa6255276abd7458760c12fa580c3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationEvents
+--- !u!114 &9014930961551219805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3171400319181309361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7b88e086b3a9d14cac543746c348d2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Bob
+  amplitude: 0.25
+  frequency: 1.5
+  moveThreshold: 0.1
