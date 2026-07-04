@@ -3575,7 +3575,7 @@
     "m_FunctionName": "Unity_BeaconDistanceFade",
     "m_FunctionSource": "",
     "m_FunctionSourceUsePragmas": true,
-    "m_FunctionBody": "Out = 1.0 - smoothstep(30.0, 70.0, distance(_WorldSpaceCameraPos.xyz, WorldPos));"
+    "m_FunctionBody": "Out = 1.0 - smoothstep(60.0, 120.0, distance(_WorldSpaceCameraPos.xyz, WorldPos));"
 }
 
 {
