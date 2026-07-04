@@ -29,6 +29,36 @@ public class Furnace : MonoBehaviour
     private bool _used;
     public bool Used => _used;
 
+    private bool _playerInside;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+        SetPlayerInside(true);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+        SetPlayerInside(false);
+    }
+
+    private void OnDisable()
+    {
+        SetPlayerInside(false);
+    }
+
+    private void SetPlayerInside(bool inside)
+    {
+        if (_playerInside == inside) return;
+        _playerInside = inside;
+
+        if (FurnaceManager.Instance)
+        {
+            FurnaceManager.Instance.SetPlayerInsideFurnace(inside);
+        }
+    }
+
     private void Awake()
     {
         if (!_animator)

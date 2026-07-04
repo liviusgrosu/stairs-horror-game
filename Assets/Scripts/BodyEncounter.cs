@@ -24,6 +24,8 @@ public class BodyEncounter : MonoBehaviour
     private bool _playerInside;
     private bool _hasTriggered;
 
+    public bool HasDropped => _hasTriggered;
+
     private void Start()
     {
         if (particleEffect) particleEffect.SetActive(false);
@@ -54,6 +56,12 @@ public class BodyEncounter : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         if (_hasTriggered || !_playerInside || !other.CompareTag("Player")) return;
+        Drop();
+    }
+
+    public void Drop()
+    {
+        if (_hasTriggered) return;
 
         _hasTriggered = true;
 

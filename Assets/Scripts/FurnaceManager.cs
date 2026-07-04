@@ -44,6 +44,23 @@ public class FurnaceManager : MonoBehaviour
 
     public int UsedFurnaceCount => _usedCount;
 
+    private int _furnaceOccupancy;
+    public bool PlayerInsideFurnace => _furnaceOccupancy > 0;
+
+    public void SetPlayerInsideFurnace(bool inside)
+    {
+        _furnaceOccupancy = Mathf.Max(0, _furnaceOccupancy + (inside ? 1 : -1));
+
+        if (inside && EncounterAccelerationZone.PlayerInside && FirstEncounter.Instance)
+        {
+            FirstEncounter.Instance.OnPlayerEnteredFurnace();
+        }
+    }
+
+    private int _encounterLevel;
+    private bool _firstEncounterBodyDropped;
+    private bool _advanceQueued;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -130,11 +147,6 @@ public class FurnaceManager : MonoBehaviour
         {
             SetCrackIntensity(_firstCrackIntensity);
 
-            if (FirstEncounter.Instance)
-            {
-                FirstEncounter.Instance.ArmFirstEncounter();
-            }
-
             if (_statue)
             {
                 _statue.Pray();
@@ -143,21 +155,9 @@ public class FurnaceManager : MonoBehaviour
         else if (_usedCount == 2)
         {
             SetCrackIntensity(_secondCrackIntensity);
+        }
 
-            StartCoroutine(SpawnEngagedZombieDelayed(_secondFurnaceSpawnDelay));
-            if (FirstEncounter.Instance)
-            {
-                FirstEncounter.Instance.StartRecurringSpawns(_nonEngagedRecurringInterval, false);
-            }
-        }
-        else if (_usedCount == 3)
-        {
-            SpawnEngagedZombie();
-            if (FirstEncounter.Instance)
-            {
-                FirstEncounter.Instance.StartRecurringSpawns(_engagedRecurringInterval, true);
-            }
-        }
+        RequestAdvanceEncounter();
 
         if (_usedCount >= _requiredFurnaces && _door)
         {
@@ -165,9 +165,67 @@ public class FurnaceManager : MonoBehaviour
         }
     }
 
+    public void RequestAdvanceEncounter()
+    {
+        if (_encounterLevel >= 3) return;
+
+        if (_encounterLevel == 1 && !_firstEncounterBodyDropped)
+        {
+            _advanceQueued = true;
+            return;
+        }
+
+        _encounterLevel++;
+        ApplyEncounterLevel(_encounterLevel);
+    }
+
+    public void NotifyFirstEncounterBodyDropped()
+    {
+        _firstEncounterBodyDropped = true;
+
+        if (_encounterLevel == 1 && _advanceQueued)
+        {
+            _advanceQueued = false;
+            _encounterLevel = 2;
+            ApplyEncounterLevel(2);
+        }
+    }
+
+    private void ApplyEncounterLevel(int level)
+    {
+        if (level == 1)
+        {
+            if (FirstEncounter.Instance)
+            {
+                FirstEncounter.Instance.ArmFirstEncounter();
+            }
+        }
+        else if (level == 2)
+        {
+            StartCoroutine(SpawnEngagedZombieDelayed(_secondFurnaceSpawnDelay));
+            if (FirstEncounter.Instance)
+            {
+                FirstEncounter.Instance.StartRecurringSpawns(_nonEngagedRecurringInterval, false);
+            }
+        }
+        else if (level == 3)
+        {
+            SpawnEngagedZombie();
+            if (FirstEncounter.Instance)
+            {
+                FirstEncounter.Instance.StartRecurringSpawns(_engagedRecurringInterval, true);
+            }
+        }
+    }
+
     private IEnumerator SpawnEngagedZombieDelayed(float delay)
     {
-        yield return new WaitForSeconds(delay);
+        var elapsed = 0f;
+        while (elapsed < delay)
+        {
+            elapsed += Time.deltaTime * EncounterAccelerationZone.Multiplier;
+            yield return null;
+        }
         SpawnEngagedZombie();
     }
 

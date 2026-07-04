@@ -21,6 +21,12 @@ public class DebugManager : MonoBehaviour
     [SerializeField] private bool _unlimitedSprint;
     [Tooltip("Multiplies walk and sprint speed by 3.")]
     [SerializeField] private bool _fasterMovement;
+    [Tooltip("Hold the Speed Boost Key to move faster.")]
+    [SerializeField] private bool _holdSpeedBoost;
+    [Tooltip("Key to hold for the speed boost.")]
+    [SerializeField] private KeyCode _speedBoostKey = KeyCode.LeftAlt;
+    [Tooltip("Speed multiplier while holding the Speed Boost Key.")]
+    [SerializeField] private float _speedBoostMultiplier = 5f;
     [Tooltip("Sets the player's health to a million.")]
     [SerializeField] private bool _unlimitedHealth;
     [Tooltip("Start with all 3 ember balls already in the inventory.")]
@@ -43,6 +49,8 @@ public class DebugManager : MonoBehaviour
     public static bool SpawningEnabled => Instance == null || Instance._enableSpawning;
     public static bool IsUnlimitedSprint => Instance != null && Instance._unlimitedSprint;
     public static bool IsFasterMovement => Instance != null && Instance._fasterMovement;
+    public static bool IsSpeedBoostActive => Instance != null && Instance._holdSpeedBoost && Input.GetKey(Instance._speedBoostKey);
+    public static float SpeedBoostMultiplier => Instance != null ? Instance._speedBoostMultiplier : 1f;
     public static bool ShouldSkipMenu => Instance != null && Instance._skipMenu;
     public static bool IsUnlimitedHealth => Instance != null && Instance._unlimitedHealth;
     public static bool ShouldStartWithEmbers => Instance != null && Instance._startWithEmbers;

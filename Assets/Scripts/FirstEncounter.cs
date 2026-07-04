@@ -15,6 +15,12 @@ public class FirstEncounter : MonoBehaviour
     [SerializeField] private string stairsTag = "Stair";
     [SerializeField] private float spawnDelay = 120f;
 
+    // [Header("Line Of Sight")]
+    // [SerializeField] private LayerMask losObstacleMask = ~0;
+    // [SerializeField] private float losEyeHeight = 1.6f;
+    // [SerializeField] private float losTargetHeight = 1.5f;
+    // [SerializeField] private float losBuffer = 0.5f;
+
     [Header("Recurring Spawn")]
     [SerializeField] private GameObject zombiePrefab;
     [Tooltip("When the player comes within this range of a dormant recurring zombie, the rest of the wave despawns. Set larger than the enemy's engage distance so the player can move around a found zombie without waking it.")]
@@ -22,9 +28,12 @@ public class FirstEncounter : MonoBehaviour
     [Tooltip("If the player leaves a still-dormant recurring zombie farther than this, it despawns (freeing the next wave to spawn). Set larger than the commit distance.")]
     [SerializeField] private float recurringAbandonDistance = 60f;
 
-    private readonly Vector3[] _offsets = new Vector3[8];
-    private readonly List<BodyEncounter> _spawned = new List<BodyEncounter>();
-    private readonly List<EnemyAI> _recurringWave = new List<EnemyAI>();
+    [SerializeField] private int baseRayCount = 8;
+
+    private Vector3[] _offsets;
+    private float _currentDistance;
+    private readonly List<BodyEncounter> _spawned = new();
+    private readonly List<EnemyAI> _recurringWave = new();
     private float _timer;
     private bool _hasSpawned;
     private bool _hasCommitted;
@@ -46,11 +55,30 @@ public class FirstEncounter : MonoBehaviour
             if (playerGO) player = playerGO.transform;
         }
 
-        for (int i = 0; i < 8; i++)
+        BuildOffsets(baseRayCount, distance);
+    }
+
+    public void SetRays(int count, float radius)
+    {
+        count = Mathf.Max(1, count);
+        if (_offsets != null && _offsets.Length == count && Mathf.Approximately(_currentDistance, radius)) return;
+        BuildOffsets(count, radius);
+    }
+
+    public void ResetRays()
+    {
+        SetRays(baseRayCount, distance);
+    }
+
+    private void BuildOffsets(int count, float radius)
+    {
+        _currentDistance = radius;
+        _offsets = new Vector3[count];
+        for (int i = 0; i < count; i++)
         {
-            float angle = i * Mathf.PI * 2f / 8f;
-            float x = Mathf.Cos(angle) * distance;
-            float z = Mathf.Sin(angle) * distance;
+            float angle = i * Mathf.PI * 2f / count;
+            float x = Mathf.Cos(angle) * radius;
+            float z = Mathf.Sin(angle) * radius;
             _offsets[i] = new Vector3(Snap(x, gridSnap.x), 0f, Snap(z, gridSnap.z));
         }
     }
@@ -68,9 +96,10 @@ public class FirstEncounter : MonoBehaviour
             Debug.DrawLine(point + up, point - up, rayColor);
         }
 
+        // Body hanging encounter
         if (_firstEncounterArmed && !_hasSpawned)
         {
-            _timer += Time.deltaTime;
+            _timer += Time.deltaTime * EncounterAccelerationZone.Multiplier;
             if (_timer >= spawnDelay)
             {
                 SpawnEncounters(playerPos, up);
@@ -106,16 +135,20 @@ public class FirstEncounter : MonoBehaviour
 
     private void TickRecurring()
     {
-        _recurringTimer += Time.deltaTime;
+        _recurringTimer += Time.deltaTime * EncounterAccelerationZone.Multiplier;
         if (_recurringTimer < _recurringInterval) return;
         _recurringTimer = 0f;
 
         if (!zombiePrefab || IsZombieActive()) return;
 
         if (_recurringEngaged)
+        {
             SpawnAtRandomStair(zombiePrefab, true);
+        }
         else
+        {
             SpawnRecurringWave();
+        }
     }
 
     private void SpawnEncounters(Vector3 playerPos, Vector3 up)
@@ -129,6 +162,7 @@ public class FirstEncounter : MonoBehaviour
             if (encounter)
             {
                 encounter.PlayerEntered += OnEncounterEntered;
+                encounter.BodyDropped += OnBodyDropped;
                 _spawned.Add(encounter);
             }
         }
@@ -150,6 +184,7 @@ public class FirstEncounter : MonoBehaviour
 
             GameObject stair = hit.collider.gameObject;
             if (!seen.Add(stair)) continue;
+            // if (!HasLineOfSight(playerPos, stair.transform.position)) continue;
 
             stairs.Add(stair);
         }
@@ -157,9 +192,21 @@ public class FirstEncounter : MonoBehaviour
         return stairs;
     }
 
+    // private bool HasLineOfSight(Vector3 playerPos, Vector3 targetBase)
+    // {
+    //     Vector3 origin = playerPos + Vector3.up * losEyeHeight;
+    //     Vector3 target = targetBase + Vector3.up * losTargetHeight;
+    //     Vector3 dir = target - origin;
+    //     float dist = dir.magnitude - losBuffer;
+    //     if (dist <= 0f) return true;
+    //     return !Physics.Raycast(origin, dir.normalized, dist, losObstacleMask, QueryTriggerInteraction.Ignore);
+    // }
+
     public void SpawnAtRandomStair(GameObject prefab, bool startEngaged)
     {
         if (!DebugManager.SpawningEnabled || !prefab || !player) return;
+        if (EncounterAccelerationZone.PlayerInside && FurnaceManager.Instance && FurnaceManager.Instance.PlayerInsideFurnace) return;
+        if (startEngaged && IsEngagedZombieActive()) return;
 
         Vector3 up = Vector3.up * verticalHalfLength;
         List<GameObject> stairs = FindStairs(player.position, up);
@@ -192,9 +239,55 @@ public class FirstEncounter : MonoBehaviour
         }
     }
 
+    public void OnPlayerEnteredFurnace()
+    {
+        if (_hasCommitted)
+        {
+            for (int i = 0; i < _spawned.Count; i++)
+            {
+                var enc = _spawned[i];
+                if (enc) enc.Drop();
+            }
+            return;
+        }
+
+        bool despawnedAny = false;
+        for (int i = _spawned.Count - 1; i >= 0; i--)
+        {
+            var enc = _spawned[i];
+            if (!enc)
+            {
+                _spawned.RemoveAt(i);
+                continue;
+            }
+            if (enc.HasDropped) continue;
+
+            Destroy(enc.gameObject);
+            _spawned.RemoveAt(i);
+            despawnedAny = true;
+        }
+
+        if (despawnedAny)
+        {
+            _hasSpawned = false;
+            _timer = 0f;
+        }
+    }
+
+    private void OnBodyDropped(BodyEncounter dropped)
+    {
+        dropped.BodyDropped -= OnBodyDropped;
+
+        if (FurnaceManager.Instance)
+        {
+            FurnaceManager.Instance.NotifyFirstEncounterBodyDropped();
+        }
+    }
+
     private void SpawnRecurringWave()
     {
         if (!player) return;
+        if (EncounterAccelerationZone.PlayerInside && FurnaceManager.Instance && FurnaceManager.Instance.PlayerInsideFurnace) return;
 
         Vector3 up = Vector3.up * verticalHalfLength;
 
@@ -300,6 +393,16 @@ public class FirstEncounter : MonoBehaviour
     private static bool IsZombieActive()
     {
         return FindObjectsByType<EnemyAI>(FindObjectsSortMode.None).Length > 0;
+    }
+
+    private static bool IsEngagedZombieActive()
+    {
+        EnemyAI[] zombies = FindObjectsByType<EnemyAI>(FindObjectsSortMode.None);
+        for (int i = 0; i < zombies.Length; i++)
+        {
+            if (zombies[i] && zombies[i].IsEngaged) return true;
+        }
+        return false;
     }
 
     private static float Snap(float value, float step)

@@ -129,6 +129,8 @@ public class EnemyAI : MonoBehaviour
 
     public bool IsIdle => _currentState == State.Idle;
 
+    public bool IsEngaged => _currentState != State.Idle || _pendingStartEngage;
+
     public void Engage()
     {
         if (!Toggle) return;

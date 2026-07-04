@@ -257,7 +257,8 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             var speedMult = DebugManager.IsFasterMovement ? DebugManager.FasterMovementMultiplier : 1f;
-            var targetSpeed = _isCrouching ? movementSpeed * crouchSpeedMultiplier :
+            var targetSpeed = DebugManager.IsSpeedBoostActive ? movementSpeed * DebugManager.SpeedBoostMultiplier :
+                          _isCrouching ? movementSpeed * crouchSpeedMultiplier :
                           _isSprinting ? movementSpeed * sprintMultiplier * speedMult : movementSpeed * speedMult;
             _currentSpeed = Mathf.SmoothDamp(_currentSpeed, targetSpeed, ref _speedSmoothVelocity, speedSmoothTime);
         }
