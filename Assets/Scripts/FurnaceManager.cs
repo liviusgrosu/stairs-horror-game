@@ -102,13 +102,23 @@ public class FurnaceManager : MonoBehaviour
         var player = GameObject.Find("Player");
         if (!player) return;
 
-        Furnace target = FindNearestUnlitFurnace(player.transform.position);
-        if (!target) return;
+        Transform target;
+        if (_usedCount >= _requiredFurnaces)
+        {
+            if (!_door) return;
+            target = _door.transform;
+        }
+        else
+        {
+            Furnace furnace = FindNearestUnlitFurnace(player.transform.position);
+            if (!furnace) return;
+            target = furnace.transform;
+        }
 
-        float distance = Vector3.Distance(player.transform.position, target.transform.position);
+        float distance = Vector3.Distance(player.transform.position, target.position);
         if (distance <= _guideSkipDistance) return;
 
-        _furnaceGuide.Activate(player.transform, target.transform);
+        _furnaceGuide.Activate(player.transform, target);
     }
 
     private static Furnace FindNearestUnlitFurnace(Vector3 from)
@@ -162,6 +172,7 @@ public class FurnaceManager : MonoBehaviour
         if (_usedCount >= _requiredFurnaces && _door)
         {
             _door.SetActive(false);
+            SpawnGuide();
         }
     }
 

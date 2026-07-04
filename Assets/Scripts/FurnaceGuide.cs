@@ -1,10 +1,5 @@
 using UnityEngine;
 
-// Lives as a disabled child of the player. FurnaceManager activates it when the
-// player is taking too long to light a furnace. While active it treats the player
-// as the centre of a circle and rides the edge closest to the target furnace,
-// playing its particles and sound and facing the furnace. It deactivates itself
-// after its lifetime, stopping the particles and sound.
 public class FurnaceGuide : MonoBehaviour
 {
     [SerializeField] private float _distanceFromPlayer = 15f;
