@@ -22,6 +22,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float crouchSpeedMultiplier = 0.5f;
     [SerializeField] private float crouchHeight = 1f;
     [SerializeField] private float crouchTransitionSpeed = 8f;
+    [SerializeField] private LayerMask _ceilingMask = ~0;
     private bool _isCrouching;
     private float _standingHeight;
     private Vector3 _standingCenter;
@@ -320,7 +321,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (!wantsToCrouch && _isCrouching)
         {
-            if (!Physics.Raycast(transform.position + Vector3.up * crouchHeight, Vector3.up, _standingHeight - crouchHeight + 0.1f))
+            if (!HasCeilingAbove())
             {
                 _isCrouching = false;
                 _controller.height = _standingHeight;
@@ -334,6 +335,14 @@ public class PlayerMovement : MonoBehaviour
         var cameraPos = _camera.transform.localPosition;
         cameraPos.y = _currentCameraOffset;
         _camera.transform.localPosition = cameraPos;
+    }
+
+    private bool HasCeilingAbove()
+    {
+        var radius = _controller.radius;
+        var origin = transform.position + _controller.center + Vector3.up * (_controller.height / 2f - radius);
+        var distance = _standingHeight - crouchHeight + 0.1f;
+        return Physics.SphereCast(origin, radius, Vector3.up, out _, distance, _ceilingMask, QueryTriggerInteraction.Ignore);
     }
 
     public void PauseBreathing()
