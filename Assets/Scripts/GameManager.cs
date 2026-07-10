@@ -22,7 +22,9 @@ public class GameManager : MonoBehaviour
     private bool triggeredFirstChase, triggeredSecondChase;
 
     [SerializeField]
-    private TextMeshProUGUI _entranceDoorText, _normalRockHoverText, _mineralDepositHoverText, _blockageRockHoverText, _usedFurnaceText, _lockedDoorText, _needFurnaceItemText, _pickupTutorialText, _incorrectFuranceText;
+    private TextMeshProUGUI _entranceDoorText, _normalRockHoverText, _mineralDepositHoverText, _blockageRockHoverText, 
+        _usedFurnaceText, _lockedDoorText, _needFurnaceItemText, _pickupTutorialText, _runningTutorialText, _crouchingTutorialText,
+        _jumpingTutorialText, _incorrectFuranceText;
     private bool DisplayingHoverText;
     private Coroutine _hoverTextCoroutine;
 
@@ -363,6 +365,42 @@ public class GameManager : MonoBehaviour
         DisplayingHoverText = true;
         if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
         _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_pickupTutorialText));
+    }
+    
+    public void ShowRunningTutorialText()
+    {
+        if (DisplayingHoverText || !_runningTutorialText)
+        {
+            return;
+        }
+
+        DisplayingHoverText = true;
+        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
+        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_runningTutorialText));
+    }
+    
+    public void ShowCrouchingTutorialText()
+    {
+        if (DisplayingHoverText || !_crouchingTutorialText)
+        {
+            return;
+        }
+
+        DisplayingHoverText = true;
+        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
+        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_crouchingTutorialText));
+    }
+    
+    public void ShowJumpingTutorialText()
+    {
+        if (DisplayingHoverText || !_jumpingTutorialText)
+        {
+            return;
+        }
+
+        DisplayingHoverText = true;
+        if (_hoverTextCoroutine != null) StopCoroutine(_hoverTextCoroutine);
+        _hoverTextCoroutine = StartCoroutine(FadeTextInAndOut(_jumpingTutorialText));
     }
     
     public void ShowIncorrectFurnaceText()
