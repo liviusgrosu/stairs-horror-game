@@ -14,7 +14,13 @@ public class CameraHitEffect : MonoBehaviour
     [SerializeField]
     private float downwardPitchOffset = 25f;
 
+    [Header("Death Collapse")]
+    [Tooltip("Roll around the camera's forward axis when the player dies. Negative is clockwise.")]
+    [SerializeField] private float deathRollAngle = -90f;
+    [SerializeField] private float deathRollDuration = 0.6f;
+
     private Vector3 _rotationOffset;
+    private float _deathRoll;
 
     void Awake()
     {
@@ -29,19 +35,40 @@ public class CameraHitEffect : MonoBehaviour
 
     void LateUpdate()
     {
-        if (_rotationOffset == Vector3.zero)
+        if (_rotationOffset != Vector3.zero)
         {
-            return;
+            _rotationOffset = Vector3.Lerp(_rotationOffset, Vector3.zero, recoverySpeed * Time.deltaTime);
+
+            if (_rotationOffset.sqrMagnitude < 0.01f)
+            {
+                _rotationOffset = Vector3.zero;
+            }
         }
 
-        _rotationOffset = Vector3.Lerp(_rotationOffset, Vector3.zero, recoverySpeed * Time.deltaTime);
-
-        if (_rotationOffset.sqrMagnitude < 0.01f)
+        if (_rotationOffset != Vector3.zero || _deathRoll != 0f)
         {
-            _rotationOffset = Vector3.zero;
+            transform.localRotation *= Quaternion.Euler(_rotationOffset.x, _rotationOffset.y, _rotationOffset.z + _deathRoll);
         }
+    }
 
-        transform.localRotation *= Quaternion.Euler(_rotationOffset);
+    public IEnumerator PlayDeathCollapse()
+    {
+        _deathRoll = 0f;
+
+        var elapsed = 0f;
+        while (elapsed < deathRollDuration)
+        {
+            elapsed += Time.deltaTime;
+            _deathRoll = Mathf.Lerp(0f, deathRollAngle, elapsed / deathRollDuration);
+            yield return null;
+        }
+        _deathRoll = deathRollAngle;
+    }
+
+    public void ResetDeathCollapse()
+    {
+        _deathRoll = 0f;
+        _rotationOffset = Vector3.zero;
     }
 
     public void ApplyHitRotation()

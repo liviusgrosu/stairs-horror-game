@@ -127,6 +127,22 @@ public class EnemyAI : MonoBehaviour
         _startEngaged = value;
     }
 
+    public void ApplyProfile(EnemySpawnProfile profile)
+    {
+        if (profile == null) return;
+
+        _startEngaged = profile.StartEngaged;
+
+        var movement = GetComponent<EnemyMovement>();
+        if (movement) movement.SetRunSpeed(profile.RunSpeed);
+
+        var perception = GetComponent<EnemyPerception>();
+        if (perception) perception.SetEngageDistanceScale(profile.EngageDistanceScale);
+
+        var combat = GetComponent<EnemyCombat>();
+        if (combat) combat.SetInstantKill(profile.InstantKill);
+    }
+
     public bool IsIdle => _currentState == State.Idle;
 
     public bool IsEngaged => _currentState != State.Idle || _pendingStartEngage;

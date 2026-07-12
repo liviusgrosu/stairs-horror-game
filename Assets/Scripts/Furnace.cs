@@ -30,6 +30,7 @@ public class Furnace : MonoBehaviour
     public bool Used => _used;
 
     private bool _playerInside;
+    private Vector3 _originalRayScale;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -64,6 +65,11 @@ public class Furnace : MonoBehaviour
         if (!_animator)
         {
             _animator = GetComponent<Animator>();
+        }
+
+        if (_ray)
+        {
+            _originalRayScale = _ray.localScale;
         }
     }
 
@@ -118,6 +124,43 @@ public class Furnace : MonoBehaviour
         else
         {
             OnFurnaceLit();
+        }
+    }
+
+    public void Deactivate()
+    {
+        if (!_used) return;
+
+        StopAllCoroutines();
+
+        _used = false;
+
+        foreach (var go in _activate)
+            if (go) go.SetActive(false);
+
+        foreach (var go in _inactivate)
+            if (go) go.SetActive(true);
+
+        if (_emberBall)
+        {
+            _emberBall.SetActive(false);
+        }
+
+        if (_ray)
+        {
+            _ray.localScale = _originalRayScale;
+        }
+
+        if (_riseAudioSource && _riseAudioSource.isPlaying)
+        {
+            _riseAudioSource.Stop();
+        }
+
+        if (_animator)
+        {
+            _animator.ResetTrigger(LightTrigger);
+            _animator.Rebind();
+            _animator.Update(0f);
         }
     }
 

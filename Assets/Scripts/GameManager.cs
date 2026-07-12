@@ -79,7 +79,11 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
-        if (DebugManager.ShouldStartWithEmbers)
+        if (DebugManager.ShouldStartWith500Embers)
+        {
+            _emberBallsHeld = DebugManager.ManyEmberCount;
+        }
+        else if (DebugManager.ShouldStartWithEmbers)
         {
             _emberBallsHeld = DebugManager.StartingEmberCount;
         }
@@ -115,116 +119,123 @@ public class GameManager : MonoBehaviour
 
     public void OpenGameOverScreen()
     {
-        player.GetComponent<CharacterController>().height = 0.1f;
-        player.GetComponent<CapsuleCollider>().height = 0.1f;
-
-        StartCoroutine(DeathBlurRoutine());
-
-        foreach (var enemy in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
-        {
-            enemy.Disengage();
-        }
-
-        var navObstacle = player.GetComponent<NavMeshObstacle>();
-        if (navObstacle) navObstacle.enabled = true;
-
-        ToggleCursorLock(true);
-        GameOverScreen.SetActive(true);
-        OverlayUI.SetActive(true);
-
-        HasDied = true;
-
-        /*if (PickaxeHand.Instance)
-        {
-            PickaxeHand.Instance.GetComponent<Animator>().Play("Hand - Death");
-        }*/
-
-        var bloodVFX = player.transform.Find("Other SFX/Blood - Player - VFX");
-        if (bloodVFX != null)
-        {
-            bloodVFX.gameObject.SetActive(true);
-            var ps = bloodVFX.GetComponent<ParticleSystem>();
-            if (ps != null) ps.Play();
-        }
+        TriggerRespawn();
     }
 
     public void OpenPitDeathScreen()
     {
-        HasDied = true;
-        StartCoroutine(PitDeathRoutine());
+        TriggerRespawn();
     }
 
-    private IEnumerator PitDeathRoutine()
+    private void TriggerRespawn()
     {
+        if (HasDied) return;
+        HasDied = true;
+        StartCoroutine(RespawnRoutine());
+    }
+
+    private IEnumerator RespawnRoutine()
+    {
+        foreach (var enemy in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
+        {
+            if (enemy) enemy.Disengage();
+        }
+
+        var playerMovement = FindFirstObjectByType<PlayerMovement>();
+        if (playerMovement)
+        {
+            playerMovement.ForceCrouch();
+        }
+
+        if (CameraHitEffect.Instance)
+        {
+            yield return CameraHitEffect.Instance.PlayDeathCollapse();
+        }
+
+        yield return FadeBlackScreen(0f, 1f, _deathFadeDuration);
+
+        foreach (var enemy in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
+        {
+            if (enemy) Destroy(enemy.gameObject);
+        }
+
+        if (FurnaceManager.Instance)
+        {
+            FurnaceManager.Instance.OnPlayerRespawned();
+        }
+
+        TeleportToRespawn();
+
+        if (PlayerHealth.Instance)
+        {
+            PlayerHealth.Instance.ResetForRespawn();
+        }
+
+        if (playerMovement)
+        {
+            playerMovement.ResetCrouchState();
+        }
+
+        if (CameraHitEffect.Instance)
+        {
+            CameraHitEffect.Instance.ResetDeathCollapse();
+        }
+
+        HasDied = false;
+        ToggleCursorLock(false);
+
+        yield return FadeBlackScreen(1f, 0f, _deathFadeDuration);
+
         if (_blackScreen)
         {
-            _blackScreen.gameObject.SetActive(true);
-            var color = _blackScreen.color;
-            var elapsed = 0f; 
-            while (elapsed < 1f)
-            {
-                elapsed += Time.deltaTime;
-                color.a = Mathf.Lerp(0f, 1f, elapsed / 1f);
-                _blackScreen.color = color;
-                yield return null;
-            }
-            color.a = 1f;
-            _blackScreen.color = color;
+            _blackScreen.gameObject.SetActive(false);
         }
-
-        yield return new WaitForSeconds(1f);
-
-        OpenGameOverScreen();
     }
 
-    private IEnumerator DeathBlurRoutine()
+    private void TeleportToRespawn()
     {
-        if (_deathPostProcessVolume != null && _deathPostProcessVolume.profile.TryGet(out DepthOfField dof))
+        if (player == null)
         {
-            _deathPostProcessVolume.gameObject.SetActive(true);
-
-            const float startFocusDistance = 5f;
-            const float blurDuration = 1f;
-
-            dof.active = true;
-            dof.mode.Override(DepthOfFieldMode.Bokeh);
-            dof.focusDistance.Override(startFocusDistance);
-
-            float elapsed = 0f;
-
-            while (elapsed < blurDuration)
-            {
-                elapsed += Time.deltaTime;
-                float t = elapsed / blurDuration;
-                dof.focusDistance.Override(Mathf.Lerp(startFocusDistance, 0f, t));
-                yield return null;
-            }
-
-            dof.focusDistance.Override(0f);
+            player = GameObject.Find("Player");
         }
+        if (player == null) return;
 
-        yield return FadeInDeathOverlay();
+        var point = RespawnPoint.GetRandom();
+        if (point == null) return;
+
+        var controller = player.GetComponent<CharacterController>();
+        if (controller) controller.enabled = false;
+
+        player.transform.position = point.transform.position;
+        player.transform.rotation = point.transform.rotation;
+
+        if (controller) controller.enabled = true;
+
+        var navObstacle = player.GetComponent<NavMeshObstacle>();
+        if (navObstacle) navObstacle.enabled = false;
     }
 
-    private IEnumerator FadeInDeathOverlay()
+    private IEnumerator FadeBlackScreen(float from, float to, float duration)
     {
         if (_blackScreen == null) yield break;
 
         _blackScreen.gameObject.SetActive(true);
         _blackScreen.transform.SetAsLastSibling();
-        if (GameOverScreen != null) GameOverScreen.transform.SetAsLastSibling();
 
         var color = _blackScreen.color;
+        color.a = from;
+        _blackScreen.color = color;
+
         var elapsed = 0f;
-        while (elapsed < _deathFadeDuration)
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            color.a = Mathf.Lerp(0f, 1f, elapsed / _deathFadeDuration);
+            color.a = Mathf.Lerp(from, to, elapsed / duration);
             _blackScreen.color = color;
             yield return null;
         }
 
-        color.a = 1f;
+        color.a = to;
         _blackScreen.color = color;
     }
 

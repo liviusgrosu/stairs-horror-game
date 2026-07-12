@@ -33,6 +33,11 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
+    public void SetRunSpeed(float speed)
+    {
+        _runSpeed = speed;
+    }
+
     public void WalkTo(Vector3 position)
     {
         _agent.isStopped = false;

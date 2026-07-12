@@ -173,6 +173,16 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    public void ResetForRespawn()
+    {
+        _currentHealth = MaxHealth;
+        _timeSinceLastDamage = 0f;
+        _regenBuffer = 0f;
+        enabled = true;
+        UpdateVignette();
+        UpdateHealthStatus();
+    }
+
     public void Heal(int amount)
     {
         _currentHealth = Mathf.Min(_currentHealth + amount, MaxHealth);
