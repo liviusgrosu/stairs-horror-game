@@ -32,6 +32,24 @@ public class PlayerMovement : MonoBehaviour
 
     public bool IsCrouching => _isCrouching;
 
+    public void ForceCrouch()
+    {
+        _isSprinting = false;
+        if (_isCrouching) return;
+
+        _isCrouching = true;
+        _controller.height = crouchHeight;
+        _controller.center = _standingCenter + Vector3.up * ((crouchHeight - _standingHeight) / 2f);
+    }
+
+    public void ResetCrouchState()
+    {
+        _isCrouching = false;
+        _controller.height = _standingHeight;
+        _controller.center = _standingCenter;
+        _currentCameraOffset = _standingCameraHeight;
+    }
+
     // Sprinting
     [Header("Sprinting")]
     [SerializeField]
@@ -136,6 +154,10 @@ public class PlayerMovement : MonoBehaviour
 
                 _yVelocity += gravity * Time.deltaTime;
                 _controller.Move(Vector3.up * (_yVelocity * Time.deltaTime));
+
+                var deathTargetY = _isCrouching ? _crouchCameraTargetY : _standingCameraHeight;
+                _currentCameraOffset = Mathf.Lerp(_currentCameraOffset, deathTargetY, crouchTransitionSpeed * Time.deltaTime);
+
                 Look();
                 return;
             }

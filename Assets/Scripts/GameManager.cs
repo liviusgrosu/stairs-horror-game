@@ -141,6 +141,17 @@ public class GameManager : MonoBehaviour
             if (enemy) enemy.Disengage();
         }
 
+        var playerMovement = FindFirstObjectByType<PlayerMovement>();
+        if (playerMovement)
+        {
+            playerMovement.ForceCrouch();
+        }
+
+        if (CameraHitEffect.Instance)
+        {
+            yield return CameraHitEffect.Instance.PlayDeathCollapse();
+        }
+
         yield return FadeBlackScreen(0f, 1f, _deathFadeDuration);
 
         foreach (var enemy in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
@@ -158,6 +169,16 @@ public class GameManager : MonoBehaviour
         if (PlayerHealth.Instance)
         {
             PlayerHealth.Instance.ResetForRespawn();
+        }
+
+        if (playerMovement)
+        {
+            playerMovement.ResetCrouchState();
+        }
+
+        if (CameraHitEffect.Instance)
+        {
+            CameraHitEffect.Instance.ResetDeathCollapse();
         }
 
         HasDied = false;
