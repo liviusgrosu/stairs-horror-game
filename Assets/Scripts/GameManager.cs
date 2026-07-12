@@ -179,6 +179,11 @@ public class GameManager : MonoBehaviour
             PlayerHealth.Instance.ResetForRespawn();
         }
 
+        if (FurnaceManager.Instance && player)
+        {
+            FurnaceManager.Instance.SpawnSafeArea(player.transform.position);
+        }
+
         if (playerMovement)
         {
             playerMovement.ResetCrouchState();

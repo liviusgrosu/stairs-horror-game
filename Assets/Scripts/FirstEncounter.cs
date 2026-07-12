@@ -96,19 +96,22 @@ public class FirstEncounter : MonoBehaviour
             Debug.DrawLine(point + up, point - up, rayColor);
         }
 
-        // Body hanging encounter
-        if (_firstEncounterArmed && !_hasSpawned)
+        if (!SafeArea.PlayerInside)
         {
-            _timer += Time.deltaTime * EncounterAccelerationZone.Multiplier;
-            if (_timer >= spawnDelay)
+            // Body hanging encounter
+            if (_firstEncounterArmed && !_hasSpawned)
             {
-                SpawnEncounters(playerPos, up);
+                _timer += Time.deltaTime * EncounterAccelerationZone.Multiplier;
+                if (_timer >= spawnDelay)
+                {
+                    SpawnEncounters(playerPos, up);
+                }
             }
-        }
 
-        if (_recurringActive)
-        {
-            TickRecurring();
+            if (_recurringActive)
+            {
+                TickRecurring();
+            }
         }
 
         if (_recurringWave.Count > 0)
@@ -220,6 +223,7 @@ public class FirstEncounter : MonoBehaviour
     public void SpawnAtRandomStair(GameObject prefab, EnemySpawnProfile profile)
     {
         if (!DebugManager.SpawningEnabled || !prefab || !player) return;
+        if (SafeArea.PlayerInside) return;
         if (EncounterAccelerationZone.PlayerInside && FurnaceManager.Instance && FurnaceManager.Instance.PlayerInsideFurnace) return;
         if (profile != null && profile.StartEngaged && IsEngagedZombieActive()) return;
 
@@ -297,6 +301,7 @@ public class FirstEncounter : MonoBehaviour
     private void SpawnRecurringWave()
     {
         if (!player) return;
+        if (SafeArea.PlayerInside) return;
         if (EncounterAccelerationZone.PlayerInside && FurnaceManager.Instance && FurnaceManager.Instance.PlayerInsideFurnace) return;
 
         Vector3 up = Vector3.up * verticalHalfLength;

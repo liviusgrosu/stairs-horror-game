@@ -247,15 +247,21 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        _movement.SetDestination(_perception.Player.position);
+        var blockedBySafeArea = SafeArea.TryGetBoundaryPoint(transform.position, out var chaseTarget);
+        if (!blockedBySafeArea)
+        {
+            chaseTarget = _perception.Player.position;
+        }
 
-        if (_movement.TrySampleNavMesh(_perception.Player.position, out var validPlayerPos))
+        _movement.SetDestination(chaseTarget);
+
+        if (_movement.TrySampleNavMesh(chaseTarget, out var validPlayerPos))
         {
             _lastValidPlayerPos = validPlayerPos;
             _hasLastValidPlayerPos = true;
         }
 
-        if (_movement.IsBarelyMoving() && distance > _loseDistance)
+        if (_movement.IsBarelyMoving() && (blockedBySafeArea || distance > _loseDistance))
         {
             _loseConfirmTimer += Time.deltaTime;
             if (_loseConfirmTimer >= _loseConfirmDuration)
@@ -269,7 +275,7 @@ public class EnemyAI : MonoBehaviour
             _loseConfirmTimer = 0f;
         }
 
-        if (distance <= _combat.AttackRange)
+        if (!blockedBySafeArea && distance <= _combat.AttackRange)
         {
             _movement.HardStop();
             _combat.StartAttack();
@@ -375,6 +381,16 @@ public class EnemyAI : MonoBehaviour
 
     private void AttackState()
     {
+        if (SafeArea.PlayerInside)
+        {
+            _combat.EndAttack();
+            animator.SetBool(IsAttacking, false);
+            _movement.Resume();
+            _movement.RunTo(_perception.Player.position);
+            _currentState = State.Move;
+            return;
+        }
+
         var directionToPlayer = (_perception.Player.position - transform.position).normalized;
         directionToPlayer.y = 0f;
         if (directionToPlayer != Vector3.zero)

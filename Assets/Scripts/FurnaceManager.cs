@@ -12,8 +12,8 @@ public class FurnaceManager : MonoBehaviour
     [SerializeField] private GameObject _zombiePrefab;
     [Tooltip("Era 1: after the 2nd furnace, how long before the one-time instant-death zombie spawns.")]
     [SerializeField] private float _instantDeathDelay = 60f;
-    [Tooltip("One-time grace period with no zombies after the first instant-death respawn.")]
-    [SerializeField] private float _postInstantDeathGrace = 180f;
+    [Tooltip("Spawned at the respawn point on death. While the player is inside it, encounter timers pause and no zombies spawn.")]
+    [SerializeField] private GameObject _safeAreaPrefab;
     [Tooltip("Era 2 with 1 furnace lit: how often a dormant (forgiving) zombie spawns.")]
     [SerializeField] private float _dormantForgivingInterval = 90f;
     [Tooltip("Era 2 with 2 furnaces lit: how often a dormant (wider engage range) zombie spawns.")]
@@ -69,9 +69,8 @@ public class FurnaceManager : MonoBehaviour
     }
 
     private bool _instantDeathTriggered;
-    private bool _pendingFirstGrace;
-    private bool _graceActive;
     private int _era2Mode = -1;
+    private SafeArea _activeSafeArea;
 
     private void Awake()
     {
@@ -209,7 +208,10 @@ public class FurnaceManager : MonoBehaviour
         var elapsed = 0f;
         while (elapsed < delay)
         {
-            elapsed += Time.deltaTime * EncounterAccelerationZone.Multiplier;
+            if (!SafeArea.PlayerInside)
+            {
+                elapsed += Time.deltaTime * EncounterAccelerationZone.Multiplier;
+            }
             yield return null;
         }
 
@@ -225,7 +227,6 @@ public class FurnaceManager : MonoBehaviour
     {
         if (_instantDeathTriggered) return;
         _instantDeathTriggered = true;
-        _pendingFirstGrace = true;
     }
 
     public void RequestAdvanceEncounter()
@@ -238,17 +239,20 @@ public class FurnaceManager : MonoBehaviour
     public void OnPlayerRespawned()
     {
         DeactivateRandomFurnace();
+        RefreshEra2Encounter();
+    }
 
-        if (_pendingFirstGrace)
+    public void SpawnSafeArea(Vector3 position)
+    {
+        if (!_safeAreaPrefab) return;
+
+        if (_activeSafeArea)
         {
-            _pendingFirstGrace = false;
-            _era2Mode = -1;
-            StartCoroutine(FirstGraceRoutine());
+            Destroy(_activeSafeArea.gameObject);
         }
-        else
-        {
-            RefreshEra2Encounter();
-        }
+
+        GameObject instance = Instantiate(_safeAreaPrefab, position, Quaternion.identity);
+        _activeSafeArea = instance.GetComponent<SafeArea>();
     }
 
     private void DeactivateRandomFurnace()
@@ -273,28 +277,12 @@ public class FurnaceManager : MonoBehaviour
         }
     }
 
-    private IEnumerator FirstGraceRoutine()
-    {
-        _graceActive = true;
-        RefreshEra2Encounter();
-
-        var elapsed = 0f;
-        while (elapsed < _postInstantDeathGrace)
-        {
-            elapsed += Time.deltaTime * EncounterAccelerationZone.Multiplier;
-            yield return null;
-        }
-
-        _graceActive = false;
-        RefreshEra2Encounter();
-    }
-
     private void RefreshEra2Encounter()
     {
         if (!_instantDeathTriggered) return;
         if (!FirstEncounter.Instance) return;
 
-        int mode = _graceActive ? 0 : Mathf.Clamp(_activeFurnaceCount, 0, 3);
+        int mode = Mathf.Clamp(_activeFurnaceCount, 0, 3);
         if (mode == _era2Mode) return;
         _era2Mode = mode;
 
