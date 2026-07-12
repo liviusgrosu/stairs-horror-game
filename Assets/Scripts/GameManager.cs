@@ -57,6 +57,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Volume _deathPostProcessVolume;
     [SerializeField] private Image _blackScreen;
     [SerializeField] private float _deathFadeDuration = 2f;
+    [SerializeField] private float _blackHoldDuration = 1f;
+    [SerializeField] private float _whiteFadeInDuration = 1.5f;
+    [SerializeField] private float _whiteFadeOutDuration = 3f;
 
     private void Awake()
     {
@@ -152,7 +155,12 @@ public class GameManager : MonoBehaviour
             yield return CameraHitEffect.Instance.PlayDeathCollapse();
         }
 
-        yield return FadeBlackScreen(0f, 1f, _deathFadeDuration);
+        var clearBlack = new Color(0f, 0f, 0f, 0f);
+        var black = new Color(0f, 0f, 0f, 1f);
+        var white = new Color(1f, 1f, 1f, 1f);
+        var clearWhite = new Color(1f, 1f, 1f, 0f);
+
+        yield return FadeScreen(clearBlack, black, _deathFadeDuration);
 
         foreach (var enemy in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
         {
@@ -184,10 +192,14 @@ public class GameManager : MonoBehaviour
         HasDied = false;
         ToggleCursorLock(false);
 
-        yield return FadeBlackScreen(1f, 0f, _deathFadeDuration);
+        yield return new WaitForSeconds(_blackHoldDuration);
+
+        yield return FadeScreen(black, white, _whiteFadeInDuration);
+        yield return FadeScreen(white, clearWhite, _whiteFadeOutDuration);
 
         if (_blackScreen)
         {
+            _blackScreen.color = clearBlack;
             _blackScreen.gameObject.SetActive(false);
         }
     }
@@ -215,28 +227,23 @@ public class GameManager : MonoBehaviour
         if (navObstacle) navObstacle.enabled = false;
     }
 
-    private IEnumerator FadeBlackScreen(float from, float to, float duration)
+    private IEnumerator FadeScreen(Color from, Color to, float duration)
     {
         if (_blackScreen == null) yield break;
 
         _blackScreen.gameObject.SetActive(true);
         _blackScreen.transform.SetAsLastSibling();
-
-        var color = _blackScreen.color;
-        color.a = from;
-        _blackScreen.color = color;
+        _blackScreen.color = from;
 
         var elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            color.a = Mathf.Lerp(from, to, elapsed / duration);
-            _blackScreen.color = color;
+            _blackScreen.color = Color.Lerp(from, to, elapsed / duration);
             yield return null;
         }
 
-        color.a = to;
-        _blackScreen.color = color;
+        _blackScreen.color = to;
     }
 
     public void ToggleControlsOverlay()
