@@ -31,6 +31,8 @@ public class DebugManager : MonoBehaviour
     [SerializeField] private bool _unlimitedHealth;
     [Tooltip("Start with all 3 ember balls already in the inventory.")]
     [SerializeField] private bool _startWithEmbers;
+    [Tooltip("Start with 500 ember balls in the inventory.")]
+    [SerializeField] private bool _startWith500Embers;
     [Tooltip("Press F to instantly kill the player.")]
     [SerializeField] private bool _enableKillKey;
     [Tooltip("Press P to damage the player by 20, as if hit by a zombie.")]
@@ -39,6 +41,7 @@ public class DebugManager : MonoBehaviour
     public const float FasterMovementMultiplier = 3f;
     public const int UnlimitedHealthAmount = 1000000;
     public const int StartingEmberCount = 3;
+    public const int ManyEmberCount = 500;
     public const int DamageKeyAmount = 20;
 
     public bool SkipMenu => _skipMenu;
@@ -47,6 +50,7 @@ public class DebugManager : MonoBehaviour
     public bool FasterMovement => _fasterMovement;
     public bool UnlimitedHealth => _unlimitedHealth;
     public bool StartWithEmbers => _startWithEmbers;
+    public bool StartWith500Embers => _startWith500Embers;
     public bool EnableKillKey => _enableKillKey;
     public bool EnableDamageKey => _enableDamageKey;
 
@@ -58,6 +62,7 @@ public class DebugManager : MonoBehaviour
     public static bool ShouldSkipMenu => Instance != null && Instance._skipMenu;
     public static bool IsUnlimitedHealth => Instance != null && Instance._unlimitedHealth;
     public static bool ShouldStartWithEmbers => Instance != null && Instance._startWithEmbers;
+    public static bool ShouldStartWith500Embers => Instance != null && Instance._startWith500Embers;
     public static bool IsKillKeyEnabled => Instance != null && Instance._enableKillKey;
     public static bool IsDamageKeyEnabled => Instance != null && Instance._enableDamageKey;
 

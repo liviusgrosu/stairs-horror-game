@@ -53,8 +53,15 @@ public class EnemyPerception : MonoBehaviour
 
     public event Action<Stimulus> OnStimulus;
 
+    private float _engageDistanceScale = 1f;
+
     public Transform Player { get; private set; }
-    public float MaxEngageDistance => _litEngageDistance;
+    public float MaxEngageDistance => _litEngageDistance * _engageDistanceScale;
+
+    public void SetEngageDistanceScale(float scale)
+    {
+        _engageDistanceScale = Mathf.Max(0.01f, scale);
+    }
 
     private bool _gizmoNoiseActive;
     private bool _gizmoNoiseHeard;
@@ -104,8 +111,8 @@ public class EnemyPerception : MonoBehaviour
         }
         
         var visibility = Visibility;
-        var effectiveEngageDistance = Mathf.Lerp(_darkEngageDistance, _litEngageDistance, visibility);
-        var effectiveInvestigationDistance = Mathf.Lerp(_darkInvestigationDistance, _litInvestigationDistance, visibility);
+        var effectiveEngageDistance = Mathf.Lerp(_darkEngageDistance, _litEngageDistance, visibility) * _engageDistanceScale;
+        var effectiveInvestigationDistance = Mathf.Lerp(_darkInvestigationDistance, _litInvestigationDistance, visibility) * _engageDistanceScale;
         var effectiveSuspicionDistance = effectiveInvestigationDistance * _sightSuspicionRatio;
         var maxRange = Mathf.Max(effectiveEngageDistance, effectiveSuspicionDistance);
 

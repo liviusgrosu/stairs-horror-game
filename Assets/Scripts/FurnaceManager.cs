@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class FurnaceManager : MonoBehaviour
@@ -9,12 +10,22 @@ public class FurnaceManager : MonoBehaviour
     [SerializeField] private int _requiredFurnaces = 3;
     [Header("Furnace Spawns")]
     [SerializeField] private GameObject _zombiePrefab;
-    [Tooltip("After the 2nd furnace, how long before the first engaged chase begins.")]
-    [SerializeField] private float _secondFurnaceSpawnDelay = 60f;
-    [Tooltip("Between the 2nd and 3rd furnace, how often a dormant (non-engaged) zombie can spawn.")]
-    [SerializeField] private float _nonEngagedRecurringInterval = 90f;
-    [Tooltip("After the 3rd furnace, how often a zombie spawns already engaged (chasing).")]
+    [Tooltip("Era 1: after the 2nd furnace, how long before the one-time instant-death zombie spawns.")]
+    [SerializeField] private float _instantDeathDelay = 60f;
+    [Tooltip("One-time grace period with no zombies after the first instant-death respawn.")]
+    [SerializeField] private float _postInstantDeathGrace = 180f;
+    [Tooltip("Era 2 with 1 furnace lit: how often a dormant (forgiving) zombie spawns.")]
+    [SerializeField] private float _dormantForgivingInterval = 90f;
+    [Tooltip("Era 2 with 2 furnaces lit: how often a dormant (wider engage range) zombie spawns.")]
+    [SerializeField] private float _dormantAlertInterval = 45f;
+    [Tooltip("Era 2 with 3 furnaces lit: how often an engaged zombie spawns during the final chase.")]
     [SerializeField] private float _engagedRecurringInterval = 60f;
+
+    [Header("Spawn Profiles")]
+    [SerializeField] private EnemySpawnProfile _instantDeathProfile = new EnemySpawnProfile { StartEngaged = true, RunSpeed = 12f, EngageDistanceScale = 1f, InstantKill = true };
+    [SerializeField] private EnemySpawnProfile _dormantForgivingProfile = new EnemySpawnProfile { StartEngaged = false, RunSpeed = 6f, EngageDistanceScale = 0.8f, InstantKill = false };
+    [SerializeField] private EnemySpawnProfile _dormantAlertProfile = new EnemySpawnProfile { StartEngaged = false, RunSpeed = 6f, EngageDistanceScale = 1.6f, InstantKill = false };
+    [SerializeField] private EnemySpawnProfile _engagedProfile = new EnemySpawnProfile { StartEngaged = true, RunSpeed = 6f, EngageDistanceScale = 1f, InstantKill = false };
 
     [Header("Statue")]
     [SerializeField] private Statue _statue;
@@ -25,7 +36,7 @@ public class FurnaceManager : MonoBehaviour
     [SerializeField] private float _crackIntensityUnlit = 0.2f;
     [Tooltip("Crack intensity after the 1st furnace is lit.")]
     [SerializeField] private float _firstCrackIntensity = 0.5f;
-    [Tooltip("Crack intensity after the 2nd furnace is lit. The 3rd furnace deactivates the door, so this is the last crack state the player sees.")]
+    [Tooltip("Crack intensity after the 2nd furnace is lit.")]
     [SerializeField] private float _secondCrackIntensity = 0.75f;
 
     [Header("Guidance")]
@@ -40,9 +51,9 @@ public class FurnaceManager : MonoBehaviour
 
     private static readonly int CrackIntensityID = Shader.PropertyToID("_CrackIntensity");
 
-    private int _usedCount;
+    private int _activeFurnaceCount;
 
-    public int UsedFurnaceCount => _usedCount;
+    public int UsedFurnaceCount => _activeFurnaceCount;
 
     private int _furnaceOccupancy;
     public bool PlayerInsideFurnace => _furnaceOccupancy > 0;
@@ -57,9 +68,10 @@ public class FurnaceManager : MonoBehaviour
         }
     }
 
-    private int _encounterLevel;
-    private bool _firstEncounterBodyDropped;
-    private bool _advanceQueued;
+    private bool _instantDeathTriggered;
+    private bool _pendingFirstGrace;
+    private bool _graceActive;
+    private int _era2Mode = -1;
 
     private void Awake()
     {
@@ -80,7 +92,6 @@ public class FurnaceManager : MonoBehaviour
 
     private IEnumerator GuideRoutine()
     {
-        // Don't start counting until the player is actually playing (past the menu).
         while (GameManager.Instance == null || !GameManager.Instance.GameStarted)
         {
             yield return null;
@@ -103,7 +114,7 @@ public class FurnaceManager : MonoBehaviour
         if (!player) return;
 
         Transform target;
-        if (_usedCount >= _requiredFurnaces)
+        if (_activeFurnaceCount >= _requiredFurnaces)
         {
             if (!_door) return;
             target = _door.transform;
@@ -149,87 +160,51 @@ public class FurnaceManager : MonoBehaviour
         }
     }
 
+    private void ApplyCrackForCount(int count)
+    {
+        float intensity = count switch
+        {
+            <= 0 => _crackIntensityUnlit,
+            1 => _firstCrackIntensity,
+            _ => _secondCrackIntensity,
+        };
+        SetCrackIntensity(intensity);
+    }
+
     public void NotifyFurnaceUsed()
     {
-        _usedCount++;
+        _activeFurnaceCount++;
+        ApplyCrackForCount(_activeFurnaceCount);
 
-        if (_usedCount == 1)
+        if (_activeFurnaceCount == 1 && _statue)
         {
-            SetCrackIntensity(_firstCrackIntensity);
-
-            if (_statue)
-            {
-                _statue.Pray();
-            }
-        }
-        else if (_usedCount == 2)
-        {
-            SetCrackIntensity(_secondCrackIntensity);
+            _statue.Pray();
         }
 
-        RequestAdvanceEncounter();
-
-        if (_usedCount >= _requiredFurnaces && _door)
+        if (_activeFurnaceCount >= _requiredFurnaces && _door)
         {
             _door.SetActive(false);
             SpawnGuide();
         }
-    }
 
-    public void RequestAdvanceEncounter()
-    {
-        if (_encounterLevel >= 3) return;
-
-        if (_encounterLevel == 1 && !_firstEncounterBodyDropped)
+        if (!_instantDeathTriggered)
         {
-            _advanceQueued = true;
-            return;
-        }
-
-        _encounterLevel++;
-        ApplyEncounterLevel(_encounterLevel);
-    }
-
-    public void NotifyFirstEncounterBodyDropped()
-    {
-        _firstEncounterBodyDropped = true;
-
-        if (_encounterLevel == 1 && _advanceQueued)
-        {
-            _advanceQueued = false;
-            _encounterLevel = 2;
-            ApplyEncounterLevel(2);
-        }
-    }
-
-    private void ApplyEncounterLevel(int level)
-    {
-        if (level == 1)
-        {
-            if (FirstEncounter.Instance)
+            if (_activeFurnaceCount == 1)
             {
-                FirstEncounter.Instance.ArmFirstEncounter();
+                if (FirstEncounter.Instance) FirstEncounter.Instance.ArmFirstEncounter();
+            }
+            else if (_activeFurnaceCount == 2)
+            {
+                StartCoroutine(SpawnInstantDeathDelayed(_instantDeathDelay));
             }
         }
-        else if (level == 2)
+        else
         {
-            StartCoroutine(SpawnEngagedZombieDelayed(_secondFurnaceSpawnDelay));
-            if (FirstEncounter.Instance)
-            {
-                FirstEncounter.Instance.StartRecurringSpawns(_nonEngagedRecurringInterval, false);
-            }
-        }
-        else if (level == 3)
-        {
-            SpawnEngagedZombie();
-            if (FirstEncounter.Instance)
-            {
-                FirstEncounter.Instance.StartRecurringSpawns(_engagedRecurringInterval, true);
-            }
+            RefreshEra2Encounter();
         }
     }
 
-    private IEnumerator SpawnEngagedZombieDelayed(float delay)
+    private IEnumerator SpawnInstantDeathDelayed(float delay)
     {
         var elapsed = 0f;
         while (elapsed < delay)
@@ -237,38 +212,108 @@ public class FurnaceManager : MonoBehaviour
             elapsed += Time.deltaTime * EncounterAccelerationZone.Multiplier;
             yield return null;
         }
-        SpawnEngagedZombie();
+
+        if (_instantDeathTriggered) yield break;
+
+        if (FirstEncounter.Instance)
+        {
+            FirstEncounter.Instance.SpawnAtRandomStair(_zombiePrefab, _instantDeathProfile);
+        }
     }
 
-    private void SpawnEngagedZombie()
+    public void NotifyInstantDeathOccurred()
     {
-        if (!_zombiePrefab) return;
+        if (_instantDeathTriggered) return;
+        _instantDeathTriggered = true;
+        _pendingFirstGrace = true;
+    }
 
-        // Prefer waking a zombie from the recurring wave; this also despawns the rest of that wave.
-        if (FirstEncounter.Instance && FirstEncounter.Instance.EngageRecurringWave())
+    public void RequestAdvanceEncounter()
+    {
+        if (!_instantDeathTriggered) return;
+        if (!FirstEncounter.Instance) return;
+        FirstEncounter.Instance.SpawnAtRandomStair(_zombiePrefab, _engagedProfile);
+    }
+
+    public void OnPlayerRespawned()
+    {
+        DeactivateRandomFurnace();
+
+        if (_pendingFirstGrace)
         {
-            return;
+            _pendingFirstGrace = false;
+            _era2Mode = -1;
+            StartCoroutine(FirstGraceRoutine());
+        }
+        else
+        {
+            RefreshEra2Encounter();
+        }
+    }
+
+    private void DeactivateRandomFurnace()
+    {
+        var lit = new List<Furnace>();
+        foreach (var furnace in FindObjectsByType<Furnace>(FindObjectsSortMode.None))
+        {
+            if (furnace.Used) lit.Add(furnace);
         }
 
-        // Otherwise wake any other dormant zombie already in the scene.
-        EnemyAI idle = FindIdleZombie();
-        if (idle)
+        if (lit.Count == 0) return;
+
+        Furnace chosen = lit[Random.Range(0, lit.Count)];
+        chosen.Deactivate();
+
+        _activeFurnaceCount = Mathf.Max(0, _activeFurnaceCount - 1);
+        ApplyCrackForCount(_activeFurnaceCount);
+
+        if (_door && _activeFurnaceCount < _requiredFurnaces)
         {
-            idle.Engage();
-            return;
+            _door.SetActive(true);
+        }
+    }
+
+    private IEnumerator FirstGraceRoutine()
+    {
+        _graceActive = true;
+        RefreshEra2Encounter();
+
+        var elapsed = 0f;
+        while (elapsed < _postInstantDeathGrace)
+        {
+            elapsed += Time.deltaTime * EncounterAccelerationZone.Multiplier;
+            yield return null;
         }
 
+        _graceActive = false;
+        RefreshEra2Encounter();
+    }
+
+    private void RefreshEra2Encounter()
+    {
+        if (!_instantDeathTriggered) return;
         if (!FirstEncounter.Instance) return;
 
-        FirstEncounter.Instance.SpawnAtRandomStair(_zombiePrefab, true);
-    }
+        int mode = _graceActive ? 0 : Mathf.Clamp(_activeFurnaceCount, 0, 3);
+        if (mode == _era2Mode) return;
+        _era2Mode = mode;
 
-    private static EnemyAI FindIdleZombie()
-    {
-        foreach (var ai in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
+        switch (mode)
         {
-            if (ai.IsIdle) return ai;
+            case 0:
+                FirstEncounter.Instance.StopRecurring();
+                FirstEncounter.Instance.DespawnAllZombies();
+                break;
+            case 1:
+                FirstEncounter.Instance.StartRecurringSpawns(_dormantForgivingInterval, _dormantForgivingProfile);
+                break;
+            case 2:
+                FirstEncounter.Instance.StartRecurringSpawns(_dormantAlertInterval, _dormantAlertProfile);
+                break;
+            default:
+                FirstEncounter.Instance.SpawnAtRandomStair(_zombiePrefab, _engagedProfile);
+                FirstEncounter.Instance.StartRecurringSpawns(_engagedRecurringInterval, _engagedProfile);
+                break;
         }
-        return null;
     }
 }

@@ -42,7 +42,7 @@ public class FirstEncounter : MonoBehaviour
     private bool _firstEncounterArmed;
     private bool _recurringActive;
     private float _recurringInterval;
-    private bool _recurringEngaged;
+    private EnemySpawnProfile _recurringProfile;
     private float _recurringTimer;
 
     private void Awake()
@@ -125,12 +125,27 @@ public class FirstEncounter : MonoBehaviour
         _firstEncounterArmed = true;
     }
 
-    public void StartRecurringSpawns(float interval, bool engaged)
+    public void StartRecurringSpawns(float interval, EnemySpawnProfile profile)
     {
         _recurringActive = true;
         _recurringInterval = Mathf.Max(0.01f, interval);
-        _recurringEngaged = engaged;
+        _recurringProfile = profile;
         _recurringTimer = 0f;
+    }
+
+    public void StopRecurring()
+    {
+        _recurringActive = false;
+    }
+
+    public void DespawnAllZombies()
+    {
+        foreach (var ai in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
+        {
+            if (ai) Destroy(ai.gameObject);
+        }
+        _recurringWave.Clear();
+        _recurringCommitted = false;
     }
 
     private void TickRecurring()
@@ -141,9 +156,9 @@ public class FirstEncounter : MonoBehaviour
 
         if (!zombiePrefab || IsZombieActive()) return;
 
-        if (_recurringEngaged)
+        if (_recurringProfile != null && _recurringProfile.StartEngaged)
         {
-            SpawnAtRandomStair(zombiePrefab, true);
+            SpawnAtRandomStair(zombiePrefab, _recurringProfile);
         }
         else
         {
@@ -202,26 +217,26 @@ public class FirstEncounter : MonoBehaviour
     //     return !Physics.Raycast(origin, dir.normalized, dist, losObstacleMask, QueryTriggerInteraction.Ignore);
     // }
 
-    public void SpawnAtRandomStair(GameObject prefab, bool startEngaged)
+    public void SpawnAtRandomStair(GameObject prefab, EnemySpawnProfile profile)
     {
         if (!DebugManager.SpawningEnabled || !prefab || !player) return;
         if (EncounterAccelerationZone.PlayerInside && FurnaceManager.Instance && FurnaceManager.Instance.PlayerInsideFurnace) return;
-        if (startEngaged && IsEngagedZombieActive()) return;
+        if (profile != null && profile.StartEngaged && IsEngagedZombieActive()) return;
 
         Vector3 up = Vector3.up * verticalHalfLength;
         List<GameObject> stairs = FindStairs(player.position, up);
         if (stairs.Count == 0) return;
 
         GameObject stair = stairs[Random.Range(0, stairs.Count)];
-        GameObject instance = CreateZombie(prefab, stair.transform.position, startEngaged);
+        GameObject instance = CreateZombie(prefab, stair.transform.position, profile);
         instance.SetActive(true);
     }
 
-    private static GameObject CreateZombie(GameObject prefab, Vector3 position, bool startEngaged)
+    private static GameObject CreateZombie(GameObject prefab, Vector3 position, EnemySpawnProfile profile)
     {
         GameObject instance = Instantiate(prefab, position, Quaternion.identity);
         var ai = instance.GetComponent<EnemyAI>();
-        if (ai) ai.SetStartEngaged(startEngaged);
+        if (ai) ai.ApplyProfile(profile);
         return instance;
     }
 
@@ -277,11 +292,6 @@ public class FirstEncounter : MonoBehaviour
     private void OnBodyDropped(BodyEncounter dropped)
     {
         dropped.BodyDropped -= OnBodyDropped;
-
-        if (FurnaceManager.Instance)
-        {
-            FurnaceManager.Instance.NotifyFirstEncounterBodyDropped();
-        }
     }
 
     private void SpawnRecurringWave()
@@ -295,7 +305,7 @@ public class FirstEncounter : MonoBehaviour
         _recurringCommitted = false;
         foreach (GameObject stair in FindStairs(player.position, up))
         {
-            GameObject instance = CreateZombie(zombiePrefab, stair.transform.position, false);
+            GameObject instance = CreateZombie(zombiePrefab, stair.transform.position, _recurringProfile);
             var ai = instance.GetComponent<EnemyAI>();
             if (ai) _recurringWave.Add(ai);
             instance.SetActive(true);

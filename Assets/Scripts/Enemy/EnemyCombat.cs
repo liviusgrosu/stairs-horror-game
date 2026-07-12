@@ -9,9 +9,15 @@ public class EnemyCombat : MonoBehaviour
 
     private float _cooldownTimer;
     private bool _isAttacking;
+    private bool _instantKill;
 
     public float AttackRange => _attackRange;
     public bool IsAttacking => _isAttacking;
+
+    public void SetInstantKill(bool value)
+    {
+        _instantKill = value;
+    }
 
     public void StartAttack()
     {
@@ -57,7 +63,18 @@ public class EnemyCombat : MonoBehaviour
 
         if (PlayerHealth.Instance)
         {
-            PlayerHealth.Instance.TakeDamage(_attackDamage);
+            if (_instantKill)
+            {
+                if (FurnaceManager.Instance)
+                {
+                    FurnaceManager.Instance.NotifyInstantDeathOccurred();
+                }
+                PlayerHealth.Instance.TakeDamage(PlayerHealth.Instance.MaxHealth);
+            }
+            else
+            {
+                PlayerHealth.Instance.TakeDamage(_attackDamage);
+            }
         }
 
         if (_damageCollider)
