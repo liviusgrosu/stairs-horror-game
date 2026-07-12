@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Chest Glow Beam - Secondary
+  m_Shader: {fileID: 4800000, guid: 45d1d8012f87ea24dbad1a337301bef0, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _PIXELATE_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _BaseGlow: 5
+    - _BodyStrength: 2
+    - _Breakup: 0.72
+    - _FadeFar: 40
+    - _FadeNear: 20
+    - _FineRayStrength: 0.8
+    - _Flicker: 0.18
+    - _LayerPhase: 0
+    - _LayerSpeed: 1
+    - _MicroRayStrength: 0.55
+    - _Opacity: 0.244
+    - _PixelSize: 3
+    - _Pixelate: 1
+    - _RayWaviness: 0.0045
+    - _ScrollContrast: 0.68
+    - _ScrollSpeed: 0.65
+    - _ShimmerSpeed: 1.15
+    - _StreakDensity: 72
+    - _StreakSharpness: 5
+    - _StreakStrength: 2.8
+    - _TopFade: 0.13
+    m_Colors:
+    - _BaseColor: {r: 0.036649283, g: 3.4999998, b: 3.365767, a: 1}
+    - _BeamColor: {r: 1.6767311, g: 0.011518348, b: 2.2, a: 1}
+    - _CoreColor: {r: 0.08, g: 0.75, b: 4.8, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
