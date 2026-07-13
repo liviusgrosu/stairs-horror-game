@@ -122,22 +122,22 @@ public class GameManager : MonoBehaviour
 
     public void OpenGameOverScreen()
     {
-        TriggerRespawn(true);
+        TriggerRespawn(false);
     }
 
     public void OpenPitDeathScreen()
     {
-        TriggerRespawn(false);
+        TriggerRespawn(true);
     }
 
-    private void TriggerRespawn(bool playDeathCollapse)
+    private void TriggerRespawn(bool isPitDeath)
     {
         if (HasDied) return;
         HasDied = true;
-        StartCoroutine(RespawnRoutine(playDeathCollapse));
+        StartCoroutine(RespawnRoutine(isPitDeath));
     }
 
-    private IEnumerator RespawnRoutine(bool playDeathCollapse)
+    private IEnumerator RespawnRoutine(bool isPitDeath)
     {
         foreach (var enemy in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
         {
@@ -150,7 +150,7 @@ public class GameManager : MonoBehaviour
             playerMovement.ForceCrouch();
         }
 
-        if (playDeathCollapse && CameraHitEffect.Instance)
+        if (!isPitDeath && CameraHitEffect.Instance)
         {
             yield return CameraHitEffect.Instance.PlayDeathCollapse();
         }
@@ -169,7 +169,7 @@ public class GameManager : MonoBehaviour
 
         if (FurnaceManager.Instance)
         {
-            FurnaceManager.Instance.OnPlayerRespawned();
+            FurnaceManager.Instance.OnPlayerRespawned(!isPitDeath);
         }
 
         TeleportToRespawn();
@@ -182,7 +182,7 @@ public class GameManager : MonoBehaviour
         SafeArea safeArea = null;
         if (FurnaceManager.Instance && player)
         {
-            safeArea = FurnaceManager.Instance.SpawnSafeArea(player.transform.position);
+            safeArea = FurnaceManager.Instance.SpawnSafeArea(player.transform.position, !isPitDeath);
         }
 
         if (playerMovement)

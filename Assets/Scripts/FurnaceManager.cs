@@ -259,13 +259,16 @@ public class FurnaceManager : MonoBehaviour
         FirstEncounter.Instance.SpawnAtRandomStair(_zombiePrefab, _engagedProfile);
     }
 
-    public void OnPlayerRespawned()
+    public void OnPlayerRespawned(bool deactivateFurnace)
     {
-        DeactivateRandomFurnace();
+        if (deactivateFurnace)
+        {
+            DeactivateRandomFurnace();
+        }
         RefreshEra2Encounter();
     }
 
-    public SafeArea SpawnSafeArea(Vector3 position)
+    public SafeArea SpawnSafeArea(Vector3 position, bool spawnHandTable)
     {
         if (!_safeAreaPrefab) return null;
 
@@ -277,7 +280,7 @@ public class FurnaceManager : MonoBehaviour
         GameObject instance = Instantiate(_safeAreaPrefab, position, Quaternion.identity);
         _activeSafeArea = instance.GetComponent<SafeArea>();
 
-        if (_handTablePrefab)
+        if (spawnHandTable && _handTablePrefab)
         {
             Instantiate(_handTablePrefab, position, Quaternion.identity);
         }
