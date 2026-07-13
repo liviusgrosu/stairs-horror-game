@@ -156,6 +156,10 @@ public sealed class BarrierSurfaceConform : MonoBehaviour
                 var offsetPoint = hit.point + hit.normal.normalized * surfaceOffset;
                 baseLocal = transform.InverseTransformPoint(offsetPoint);
             }
+            else
+            {
+                baseLocal.y = -1000f;
+            }
 
             for (var row = 0; row < rows; row++)
             {
