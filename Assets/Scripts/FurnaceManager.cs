@@ -14,6 +14,8 @@ public class FurnaceManager : MonoBehaviour
     [SerializeField] private float _instantDeathDelay = 60f;
     [Tooltip("Spawned at the respawn point on death. While the player is inside it, encounter timers pause and no zombies spawn.")]
     [SerializeField] private GameObject _safeAreaPrefab;
+    [Tooltip("Spawned at the same spot as the safe area on death. Unlike the safe area, this persists after the player walks away.")]
+    [SerializeField] private GameObject _handTablePrefab;
     [Tooltip("Era 2 with 1 furnace lit: how often a dormant (forgiving) zombie spawns.")]
     [SerializeField] private float _dormantForgivingInterval = 90f;
     [Tooltip("Era 2 with 2 furnaces lit: how often a dormant (wider engage range) zombie spawns.")]
@@ -112,23 +114,44 @@ public class FurnaceManager : MonoBehaviour
         var player = GameObject.Find("Player");
         if (!player) return;
 
-        Transform target;
-        if (_activeFurnaceCount >= _requiredFurnaces)
+        Transform target = FindNearestEmberBall(player.transform.position);
+        if (!target)
         {
-            if (!_door) return;
-            target = _door.transform;
-        }
-        else
-        {
-            Furnace furnace = FindNearestUnlitFurnace(player.transform.position);
-            if (!furnace) return;
-            target = furnace.transform;
+            if (_activeFurnaceCount >= _requiredFurnaces)
+            {
+                if (!_door) return;
+                target = _door.transform;
+            }
+            else
+            {
+                Furnace furnace = FindNearestUnlitFurnace(player.transform.position);
+                if (!furnace) return;
+                target = furnace.transform;
+            }
         }
 
         float distance = Vector3.Distance(player.transform.position, target.position);
         if (distance <= _guideSkipDistance) return;
 
         _furnaceGuide.Activate(player.transform, target);
+    }
+
+    private static Transform FindNearestEmberBall(Vector3 from)
+    {
+        Transform nearest = null;
+        float best = float.MaxValue;
+
+        foreach (var ember in FindObjectsByType<EmberBall>(FindObjectsSortMode.None))
+        {
+            float distance = (ember.transform.position - from).sqrMagnitude;
+            if (distance < best)
+            {
+                best = distance;
+                nearest = ember.transform;
+            }
+        }
+
+        return nearest;
     }
 
     private static Furnace FindNearestUnlitFurnace(Vector3 from)
@@ -253,6 +276,11 @@ public class FurnaceManager : MonoBehaviour
 
         GameObject instance = Instantiate(_safeAreaPrefab, position, Quaternion.identity);
         _activeSafeArea = instance.GetComponent<SafeArea>();
+
+        if (_handTablePrefab)
+        {
+            Instantiate(_handTablePrefab, position, Quaternion.identity);
+        }
     }
 
     private void DeactivateRandomFurnace()
