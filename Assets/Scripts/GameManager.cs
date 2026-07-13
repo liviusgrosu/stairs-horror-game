@@ -448,7 +448,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator FadeTextInAndOut(TextMeshProUGUI text)
     {
         const float fadeDuration = 0.25f; 
-        const float pauseDuration = 2f; 
+        const float pauseDuration = 5f; 
     
         text.gameObject.SetActive(true);
         var originalColor = text.color;

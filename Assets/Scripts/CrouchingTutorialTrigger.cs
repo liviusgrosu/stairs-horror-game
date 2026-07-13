@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class CrouchingTutorialTrigger : MonoBehaviour
 {
-    private bool _triggered;
+    private static bool _triggered;
 
     private void OnTriggerEnter(Collider other)
     {

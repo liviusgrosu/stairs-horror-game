@@ -162,6 +162,12 @@ public class CharacterFootsteps : MonoBehaviour
         if (!_wasGrounded && isGrounded)
         {
             var fallSpeed = Mathf.Abs(_characterController.velocity.y);
+            if (fallSpeed < _landingMinVelocity)
+            {
+                _wasGrounded = isGrounded;
+                return;
+            }
+
             var t = Mathf.InverseLerp(_landingMinVelocity, _landingMaxVelocity, fallSpeed);
             var volume = IsDampened
                 ? DampenedVolumeMultiplier
