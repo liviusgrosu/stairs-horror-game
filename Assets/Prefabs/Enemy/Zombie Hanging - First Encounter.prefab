@@ -5182,6 +5182,27 @@ Transform:
   - {fileID: 8131929977495599375}
   m_Father: {fileID: 6898780767419283691}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8888000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146054662609259077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d79902661d2515a469564a8aebfcdb99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  snapSelf: 0
+  snapChildren: 1
+  surfaceMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  castStartHeight: 2
+  castDistance: 20
+  surfaceOffset: 0.01
+  alignToNormal: 1
 --- !u!1 &2378674548857424528
 GameObject:
   m_ObjectHideFlags: 0
@@ -6019,6 +6040,33 @@ AudioReverbFilter:
   m_LFReference: 250
   m_ReflectionsDelay: 0
   m_ReverbPreset: 14
+--- !u!114 &8888000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6687914815078315992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667ba3b73b12a684295cef2d71340cb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  origin: {fileID: 2976295617265060378}
+  surfaceMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  minInterval: 0.8
+  maxInterval: 1.2
+  maxSpreadAngle: 8
+  rayDistance: 100
+  surfaceOffset: 0.01
+  bloodMaterials:
+  - {fileID: 2100000, guid: 57195948e86cd91488b1fa7a9ca28c35, type: 2}
+  - {fileID: 2100000, guid: b16123c4fe89b4d458cfdf7ca8507901, type: 2}
+  startScale: 1
+  endScale: 3
+  lifetime: 2
 --- !u!1 &6726546424021957162
 GameObject:
   m_ObjectHideFlags: 0
@@ -6110,6 +6158,27 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8888000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6726546424021957162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d79902661d2515a469564a8aebfcdb99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  snapSelf: 1
+  snapChildren: 0
+  surfaceMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  castStartHeight: 2
+  castDistance: 20
+  surfaceOffset: 0.01
+  alignToNormal: 0
 --- !u!1 &8213423046145529550
 GameObject:
   m_ObjectHideFlags: 0
@@ -6435,48 +6504,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8888000000000000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6687914815078315992}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 667ba3b73b12a684295cef2d71340cb0, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  origin: {fileID: 2976295617265060378}
-  minInterval: 0.8
-  maxInterval: 1.2
-  bloodMaterials:
-  - {fileID: 2100000, guid: 57195948e86cd91488b1fa7a9ca28c35, type: 2}
-  - {fileID: 2100000, guid: b16123c4fe89b4d458cfdf7ca8507901, type: 2}
---- !u!114 &8888000000000000002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2146054662609259077}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d79902661d2515a469564a8aebfcdb99, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
---- !u!114 &8888000000000000003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6726546424021957162}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d79902661d2515a469564a8aebfcdb99, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  snapSelf: 1
-  snapChildren: 0
-  alignToNormal: 0

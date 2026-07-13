@@ -122,22 +122,22 @@ public class GameManager : MonoBehaviour
 
     public void OpenGameOverScreen()
     {
-        TriggerRespawn();
+        TriggerRespawn(true);
     }
 
     public void OpenPitDeathScreen()
     {
-        TriggerRespawn();
+        TriggerRespawn(false);
     }
 
-    private void TriggerRespawn()
+    private void TriggerRespawn(bool playDeathCollapse)
     {
         if (HasDied) return;
         HasDied = true;
-        StartCoroutine(RespawnRoutine());
+        StartCoroutine(RespawnRoutine(playDeathCollapse));
     }
 
-    private IEnumerator RespawnRoutine()
+    private IEnumerator RespawnRoutine(bool playDeathCollapse)
     {
         foreach (var enemy in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
         {
@@ -150,7 +150,7 @@ public class GameManager : MonoBehaviour
             playerMovement.ForceCrouch();
         }
 
-        if (CameraHitEffect.Instance)
+        if (playDeathCollapse && CameraHitEffect.Instance)
         {
             yield return CameraHitEffect.Instance.PlayDeathCollapse();
         }
