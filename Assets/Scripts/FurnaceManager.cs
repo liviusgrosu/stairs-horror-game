@@ -265,9 +265,9 @@ public class FurnaceManager : MonoBehaviour
         RefreshEra2Encounter();
     }
 
-    public void SpawnSafeArea(Vector3 position)
+    public SafeArea SpawnSafeArea(Vector3 position)
     {
-        if (!_safeAreaPrefab) return;
+        if (!_safeAreaPrefab) return null;
 
         if (_activeSafeArea)
         {
@@ -281,6 +281,8 @@ public class FurnaceManager : MonoBehaviour
         {
             Instantiate(_handTablePrefab, position, Quaternion.identity);
         }
+
+        return _activeSafeArea;
     }
 
     private void DeactivateRandomFurnace()

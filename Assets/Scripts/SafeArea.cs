@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class SafeArea : MonoBehaviour
@@ -11,12 +12,47 @@ public class SafeArea : MonoBehaviour
 
     private Transform _player;
 
+    private AudioSource _audioSource;
+    private float _maxVolume;
+    private Coroutine _audioFadeCoroutine;
+
     private void Awake()
     {
         _active = this;
 
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource)
+        {
+            _maxVolume = _audioSource.volume;
+            _audioSource.volume = 0f;
+        }
+
         var playerGO = GameObject.FindGameObjectWithTag("Player");
         if (playerGO) _player = playerGO.transform;
+    }
+
+    public void FadeInAudio(float duration)
+    {
+        if (!_audioSource) return;
+
+        if (_audioFadeCoroutine != null) StopCoroutine(_audioFadeCoroutine);
+        _audioFadeCoroutine = StartCoroutine(FadeInAudioRoutine(duration));
+    }
+
+    private IEnumerator FadeInAudioRoutine(float duration)
+    {
+        float startVolume = _audioSource.volume;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            _audioSource.volume = Mathf.Lerp(startVolume, _maxVolume, elapsed / duration);
+            yield return null;
+        }
+
+        _audioSource.volume = _maxVolume;
+        _audioFadeCoroutine = null;
     }
 
     private void OnDestroy()

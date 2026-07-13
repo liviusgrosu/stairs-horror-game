@@ -179,9 +179,10 @@ public class GameManager : MonoBehaviour
             PlayerHealth.Instance.ResetForRespawn();
         }
 
+        SafeArea safeArea = null;
         if (FurnaceManager.Instance && player)
         {
-            FurnaceManager.Instance.SpawnSafeArea(player.transform.position);
+            safeArea = FurnaceManager.Instance.SpawnSafeArea(player.transform.position);
         }
 
         if (playerMovement)
@@ -200,6 +201,12 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(_blackHoldDuration);
 
         yield return FadeScreen(black, white, _whiteFadeInDuration);
+
+        if (safeArea)
+        {
+            safeArea.FadeInAudio(_whiteFadeOutDuration);
+        }
+
         yield return FadeScreen(white, clearWhite, _whiteFadeOutDuration);
 
         if (_blackScreen)
