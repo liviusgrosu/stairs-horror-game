@@ -9,6 +9,7 @@ public class Pickup : MonoBehaviour
 
     public LayerMask ignoreMask;
 
+    [SerializeField]
     private AudioSource _audioSource;
 
     [SerializeField]
@@ -16,7 +17,10 @@ public class Pickup : MonoBehaviour
 
     private void Awake()
     {
-        _audioSource = GetComponent<AudioSource>();
+        if (!_audioSource)
+        {
+            _audioSource = GetComponent<AudioSource>();
+        }
     }
 
     private void Start()

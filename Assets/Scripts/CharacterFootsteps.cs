@@ -75,7 +75,7 @@ public class CharacterFootsteps : MonoBehaviour
     public float DampenedVolumeMultiplier { get; set; }
     public bool SuppressReverb { get; set; }
 
-    private AudioSource _audioSource;
+    [SerializeField] private AudioSource _audioSource;
     private CharacterController _characterController;
     private PlayerMovement _playerMovement;
     private AudioReverbFilter _reverbFilter;
@@ -91,7 +91,10 @@ public class CharacterFootsteps : MonoBehaviour
 
     void Awake()
     {
-        _audioSource = GetComponent<AudioSource>();
+        if (!_audioSource)
+        {
+            _audioSource = GetComponent<AudioSource>();
+        }
         _characterController = GetComponent<CharacterController>();
         _playerMovement = GetComponent<PlayerMovement>();
         _reverbFilter = GetComponent<AudioReverbFilter>();

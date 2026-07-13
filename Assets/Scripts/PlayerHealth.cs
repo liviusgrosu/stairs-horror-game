@@ -34,7 +34,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private AudioClip[] gettingHitSFX;
     [SerializeField] private AudioClip deathSFX;
     [SerializeField] private AudioClip knuckleCrackSFX;
-    private AudioSource _audioSource;
+    [SerializeField] private AudioSource _audioSource;
 
     [Header("Health Status UI")]
     [SerializeField] private Image _healthStatusImage;
@@ -51,7 +51,10 @@ public class PlayerHealth : MonoBehaviour
             return;
         }
         Instance = this;
-        _audioSource = GetComponent<AudioSource>();
+        if (!_audioSource)
+        {
+            _audioSource = GetComponent<AudioSource>();
+        }
     }
     
     private void Start()
@@ -175,6 +178,10 @@ public class PlayerHealth : MonoBehaviour
 
     public void ResetForRespawn()
     {
+        if (_audioSource)
+        {
+            _audioSource.Stop();
+        }
         _currentHealth = MaxHealth;
         _timeSinceLastDamage = 0f;
         _regenBuffer = 0f;
