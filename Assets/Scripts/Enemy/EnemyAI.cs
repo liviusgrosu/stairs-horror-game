@@ -36,6 +36,8 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Attack State")]
     [SerializeField] private float _toPlayerRotateAttackSpeed = 500f;
+    [Tooltip("Speed multiplier applied while attacking, so the enemy keeps closing on the player at a reduced pace (0.25 = 75% slower).")]
+    [SerializeField] private float _attackMoveSpeedScale = 0.25f;
 
     [Header("Losing The Player")]
     [Tooltip("While chasing, if the enemy reaches the closest point it can (e.g. the mouth of a furnace the player ducked into) and the player is still farther than this, it gives up.")]
@@ -277,7 +279,6 @@ public class EnemyAI : MonoBehaviour
 
         if (!blockedBySafeArea && distance <= _combat.AttackRange)
         {
-            _movement.HardStop();
             _combat.StartAttack();
             animator.SetBool(IsAttacking, true);
             animator.Play("Attack", 0, 0f);
@@ -390,6 +391,8 @@ public class EnemyAI : MonoBehaviour
             _currentState = State.Move;
             return;
         }
+
+        _movement.CreepTo(_perception.Player.position, _attackMoveSpeedScale);
 
         var directionToPlayer = (_perception.Player.position - transform.position).normalized;
         directionToPlayer.y = 0f;

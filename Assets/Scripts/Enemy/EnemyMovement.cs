@@ -58,6 +58,13 @@ public class EnemyMovement : MonoBehaviour
         _agent.SetDestination(position);
     }
 
+    public void CreepTo(Vector3 position, float speedMultiplier)
+    {
+        _agent.isStopped = false;
+        _agent.speed = _runSpeed * speedMultiplier;
+        _agent.SetDestination(position);
+    }
+
     public void Halt()
     {
         _agent.isStopped = true;

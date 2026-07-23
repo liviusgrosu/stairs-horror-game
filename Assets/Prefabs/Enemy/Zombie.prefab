@@ -135,6 +135,7 @@ MonoBehaviour:
   _chaseMusicNearDistance: 10
   _chaseMusicFadeInDuration: 2
   _toPlayerRotateAttackSpeed: 100
+  _attackMoveSpeedScale: 0.25
   _loseDistance: 3
   _loseConfirmDuration: 0.5
   _returnToHoleTimeout: 8
@@ -180,8 +181,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 093eadc43eca6c0459ccc08ed10b5afb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMovement
-  _walkSpeed: 2
-  _runSpeed: 2.5
+  _walkSpeed: 6
+  _runSpeed: 6
   _angularSpeed: 500
   _stayInPlace: 0
 --- !u!114 &8307861582946751201
@@ -564,4 +565,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bob
   amplitude: 0.25
   frequency: 1.5
-  moveThreshold: 0.1
