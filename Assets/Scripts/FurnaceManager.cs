@@ -7,6 +7,8 @@ public class FurnaceManager : MonoBehaviour
     public static FurnaceManager Instance;
 
     [SerializeField] private GameObject _door;
+    [Tooltip("Child of the door holding the individual fires. One fire is lit per active furnace. Auto-found under the door if left empty.")]
+    [SerializeField] private Transform _doorFires;
     [SerializeField] private int _requiredFurnaces = 3;
     [Header("Furnace Spawns")]
     [SerializeField] private GameObject _zombiePrefab;
@@ -84,6 +86,36 @@ public class FurnaceManager : MonoBehaviour
         Instance = this;
 
         SetCrackIntensity(_crackIntensityUnlit);
+
+        if (!_doorFires && _door)
+        {
+            _doorFires = FindDeepChild(_door.transform, "fires");
+        }
+        UpdateDoorFires();
+    }
+
+    private static Transform FindDeepChild(Transform parent, string name)
+    {
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            if (child.name == name) return child;
+
+            Transform found = FindDeepChild(child, name);
+            if (found) return found;
+        }
+
+        return null;
+    }
+
+    private void UpdateDoorFires()
+    {
+        if (!_doorFires) return;
+
+        for (int i = 0; i < _doorFires.childCount; i++)
+        {
+            _doorFires.GetChild(i).gameObject.SetActive(i < _activeFurnaceCount);
+        }
     }
 
     private void Start()
@@ -197,6 +229,7 @@ public class FurnaceManager : MonoBehaviour
     {
         _activeFurnaceCount++;
         ApplyCrackForCount(_activeFurnaceCount);
+        UpdateDoorFires();
 
         if (_activeFurnaceCount == 1 && _statue)
         {
@@ -303,6 +336,7 @@ public class FurnaceManager : MonoBehaviour
 
         _activeFurnaceCount = Mathf.Max(0, _activeFurnaceCount - 1);
         ApplyCrackForCount(_activeFurnaceCount);
+        UpdateDoorFires();
 
         if (_door && _activeFurnaceCount < _requiredFurnaces)
         {
